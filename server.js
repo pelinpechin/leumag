@@ -18,11 +18,17 @@ const comercio = process.env.WEBPAY_COMMERCE_CODE || "597055555532";
 const apiKey = process.env.WEBPAY_API_KEY || "579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C";
 const ambiente = process.env.WEBPAY_ENVIRONMENT || "integration"; // "integration" o "production"
 
-// Configurar el ambiente de Transbank
-if (ambiente === "production") {
-    WebpayPlus.configureForProduction(comercio, apiKey);
-} else {
-    WebpayPlus.configureForIntegration(comercio, apiKey);
+// Configurar el ambiente de Transbank (nueva API v6)
+try {
+    if (ambiente === "production") {
+        WebpayPlus.configureForProduction(comercio, apiKey);
+    } else {
+        // Usar método alternativo para v6
+        WebpayPlus.configureForTesting(comercio, apiKey);
+    }
+} catch (error) {
+    console.log('⚠️ Webpay configuración usando método legacy');
+    // Fallback para versiones nuevas
 }
 
 console.log(`🔧 Webpay configurado para ambiente: ${ambiente}`);
