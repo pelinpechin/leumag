@@ -2,173 +2,33 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
-const { WebpayPlus } = require('transbank-sdk');
 
 // Crear app Express
 const app = express();
 
-// Configurar middlewares
+// Configurar middlewares básicos
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Configuración de Webpay
-const comercio = process.env.WEBPAY_COMMERCE_CODE || '597055555532';
-const apiKey = process.env.WEBPAY_API_KEY || '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C';
-const ambiente = process.env.WEBPAY_ENVIRONMENT || 'integration';
-
-WebpayPlus.configureForTesting(comercio, apiKey);
-
-console.log(`🔧 Webpay configurado para ambiente: ${ambiente}`);
-console.log(`🏪 Código de comercio: ${comercio}`);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Configuración del transporter de correo
 let transporterEmail = null;
 
 // Solo configurar correo si hay credenciales válidas
-if (process.env.EMAIL_USER && process.env.EMAIL_PASS && 
-    process.env.EMAIL_USER !== 'tu_correo@gmail.com' && 
-    process.env.EMAIL_PASS !== 'tu_contraseña_de_aplicacion') {
-    
-    transporterEmail = nodemailer.createTransporter({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
-
-    // Verificar configuración de correo
-    transporterEmail.verify(function(error, success) {
-        if (error) {
-            console.log('❌ Error configuración correo:', error.message);
-            console.log('📧 Funcionando en modo simulado (sin envío real)');
-            transporterEmail = null;
-        } else {
-            console.log('✅ Servidor de correo configurado correctamente');
-        }
-    });
-} else {
-    console.log('📧 Correo no configurado - funcionando en modo simulado');
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    try {
+        transporterEmail = nodemailer.createTransporter({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+    } catch (error) {
+        console.log('Email transporter could not be configured');
+        transporterEmail = null;
+    }
 }
-
-// Almacenar transacciones en memoria (en producción usar base de datos)
-const transaccionesActivas = new Map();
-
-// === RUTAS WEBPAY ===
-
-// Iniciar transacción
-app.post('/webpay/iniciar', async (req, res) => {
-    try {
-        const { 
-            monto, 
-            ordenCompra, 
-            rutAlumno, 
-            nombreAlumno, 
-            cuotasSeleccionadas,
-            emailNotificacion 
-        } = req.body;
-
-        console.log('💳 Iniciando transacción Webpay:', { 
-            monto, 
-            ordenCompra, 
-            rutAlumno, 
-            nombreAlumno 
-        });
-
-        const baseUrl = process.env.URL || 'https://your-netlify-site.netlify.app';
-        const returnUrl = `${baseUrl}/.netlify/functions/api/webpay/retorno`;
-
-        const response = await WebpayPlus.Transaction.create(
-            ordenCompra,
-            'CL',
-            monto,
-            returnUrl
-        );
-
-        // Guardar datos de la transacción
-        transaccionesActivas.set(response.token, {
-            token: response.token,
-            ordenCompra: ordenCompra,
-            monto: monto,
-            rutAlumno: rutAlumno,
-            nombreAlumno: nombreAlumno,
-            cuotasSeleccionadas: cuotasSeleccionadas,
-            emailNotificacion: emailNotificacion,
-            fechaCreacion: new Date(),
-            estado: 'iniciada'
-        });
-
-        console.log('✅ Transacción iniciada exitosamente:', response.token);
-
-        res.json({
-            success: true,
-            token: response.token,
-            url: response.url
-        });
-
-    } catch (error) {
-        console.error('❌ Error iniciando transacción:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// Retorno de Webpay
-app.post('/webpay/retorno', async (req, res) => {
-    try {
-        const { token_ws } = req.body;
-        
-        console.log('🔄 Procesando retorno de Webpay:', token_ws);
-
-        const confirmResponse = await WebpayPlus.Transaction.commit(token_ws);
-        const datosTransaccion = transaccionesActivas.get(token_ws);
-
-        if (!datosTransaccion) {
-            throw new Error('Transacción no encontrada');
-        }
-
-        const pagoExitoso = confirmResponse.response_code === 0;
-
-        // Actualizar datos de la transacción
-        datosTransaccion.estado = pagoExitoso ? 'aprobada' : 'rechazada';
-        datosTransaccion.codigoRespuesta = confirmResponse.response_code;
-        datosTransaccion.codigoAutorizacion = confirmResponse.authorization_code;
-        datosTransaccion.fechaProceso = new Date();
-
-        if (pagoExitoso) {
-            console.log('✅ Pago aprobado:', {
-                ordenCompra: datosTransaccion.ordenCompra,
-                monto: confirmResponse.amount,
-                authorization: confirmResponse.authorization_code
-            });
-        } else {
-            console.log('❌ Pago rechazado:', {
-                ordenCompra: datosTransaccion.ordenCompra,
-                responseCode: confirmResponse.response_code
-            });
-        }
-
-        // Redirigir al frontend con el resultado
-        const resultadoUrl = `/webpay-result?` + new URLSearchParams({
-            success: pagoExitoso,
-            token: token_ws,
-            authorization: confirmResponse.authorization_code || '',
-            responseCode: confirmResponse.response_code || '',
-            amount: confirmResponse.amount || '',
-            buyOrder: confirmResponse.buy_order || '',
-            card: confirmResponse.card_detail?.card_number || ''
-        }).toString();
-
-        res.redirect(resultadoUrl);
-
-    } catch (error) {
-        console.error('❌ Error en retorno de Webpay:', error);
-        res.redirect(`/webpay-result?success=false&error=${encodeURIComponent(error.message)}`);
-    }
-});
 
 // === RUTAS PARA ENVÍO DE CORREOS ===
 
@@ -179,11 +39,8 @@ app.post('/correo/enviar', async (req, res) => {
             destinatario, 
             asunto, 
             mensaje, 
-            tipoCorreo,
-            datosAlumno 
+            tipoCorreo
         } = req.body;
-
-        console.log('📧 Enviando correo:', { destinatario, asunto, tipoCorreo });
 
         if (transporterEmail) {
             const mailOptions = {
@@ -199,16 +56,11 @@ app.post('/correo/enviar', async (req, res) => {
                         <div style="padding: 20px; background-color: #f8f9fa;">
                             <pre style="font-family: Arial, sans-serif; white-space: pre-wrap; background-color: white; padding: 15px; border-left: 4px solid #007bff;">${mensaje}</pre>
                         </div>
-                        <div style="background-color: #6c757d; color: white; padding: 15px; text-align: center; font-size: 12px;">
-                            <p>Este correo fue enviado automáticamente desde nuestro Sistema de Tesorería</p>
-                            <p>Por favor no responda a este correo</p>
-                        </div>
                     </div>
                 `
             };
 
             const info = await transporterEmail.sendMail(mailOptions);
-            console.log('✅ Correo enviado exitosamente:', info.messageId);
             
             res.json({ 
                 success: true, 
@@ -216,11 +68,6 @@ app.post('/correo/enviar', async (req, res) => {
                 message: 'Correo enviado correctamente'
             });
         } else {
-            console.log('📧 SIMULACIÓN: Correo que se habría enviado:');
-            console.log(`   📫 Para: ${destinatario}`);
-            console.log(`   📝 Asunto: ${asunto}`);
-            console.log(`   📄 Tipo: ${tipoCorreo}`);
-            
             res.json({ 
                 success: true, 
                 messageId: 'simulado-' + Date.now(),
@@ -230,7 +77,6 @@ app.post('/correo/enviar', async (req, res) => {
         }
 
     } catch (error) {
-        console.error('❌ Error enviando correo:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message 
@@ -243,8 +89,6 @@ app.post('/correo/enviar-masivo', async (req, res) => {
     try {
         const { correos } = req.body;
         
-        console.log('📧 Iniciando envío masivo de correos:', correos.length);
-        
         const resultados = {
             enviados: 0,
             errores: 0,
@@ -252,11 +96,7 @@ app.post('/correo/enviar-masivo', async (req, res) => {
         };
 
         if (!transporterEmail) {
-            console.log('📧 SIMULACIÓN: Envío masivo que se habría realizado:');
-            console.log(`   📨 Total correos: ${correos.length}`);
-            
             correos.forEach((correoData, index) => {
-                console.log(`   ${index + 1}. Para: ${correoData.destinatario} - Asunto: ${correoData.asunto}`);
                 resultados.enviados++;
                 resultados.detalles.push({
                     destinatario: correoData.destinatario,
@@ -289,10 +129,6 @@ app.post('/correo/enviar-masivo', async (req, res) => {
                             <div style="padding: 20px; background-color: #f8f9fa;">
                                 <pre style="font-family: Arial, sans-serif; white-space: pre-wrap; background-color: white; padding: 15px; border-left: 4px solid #ffc107;">${correoData.mensaje}</pre>
                             </div>
-                            <div style="background-color: #6c757d; color: white; padding: 15px; text-align: center; font-size: 12px;">
-                                <p>Este correo fue enviado automáticamente desde nuestro Sistema de Tesorería</p>
-                                <p>Por favor no responda a este correo</p>
-                            </div>
                         </div>
                     `
                 };
@@ -305,7 +141,7 @@ app.post('/correo/enviar-masivo', async (req, res) => {
                     messageId: info.messageId
                 });
 
-                // Delay entre envíos para evitar spam
+                // Delay entre envíos
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
             } catch (error) {
@@ -315,19 +151,15 @@ app.post('/correo/enviar-masivo', async (req, res) => {
                     status: 'error',
                     error: error.message
                 });
-                console.error(`❌ Error enviando a ${correoData.destinatario}:`, error.message);
             }
         }
 
-        console.log('📊 Envío masivo completado:', resultados);
-        
         res.json({ 
             success: true, 
             resultados 
         });
 
     } catch (error) {
-        console.error('❌ Error en envío masivo:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message 
@@ -335,12 +167,22 @@ app.post('/correo/enviar-masivo', async (req, res) => {
     }
 });
 
+// Ruta de prueba
+app.get('/test', (req, res) => {
+    res.json({ message: 'API funcionando correctamente', timestamp: new Date().toISOString() });
+});
+
 // Exportar como función serverless
 const handler = serverless(app);
+
 module.exports.handler = async (event, context) => {
-    // Para debugging
-    console.log('Event:', JSON.stringify(event, null, 2));
-    
-    const result = await handler(event, context);
-    return result;
+    try {
+        const result = await handler(event, context);
+        return result;
+    } catch (error) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Internal server error' })
+        };
+    }
 };
