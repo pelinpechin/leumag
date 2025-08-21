@@ -1,0 +1,36 @@
+{
+  "name": "sistema-tesoreria-chile",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de tesorería escolar para Chile",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "frontend": "live-server --port=3000",
+    "install-deps": "npm install express cors transbank-sdk"
+  },
+  "keywords": [
+    "tesoreria",
+    "chile",
+    "escuela",
+    "cuotas",
+    "pagos",
+    "webpay"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "nodemailer": "^7.0.5",
+    "transbank-sdk": "^4.0.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

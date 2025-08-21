@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Tesorería - Chile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <img src="leumag.png" alt="Leumag" class="navbar-logo me-2">
+                <img src="experimentalin.png" alt="Experimentalin" class="navbar-logo me-3">
+                <a class="navbar-brand" href="#" onclick="mostrarVista('admin')">
+                    <i class="bi bi-cash-coin"></i>
+                    Sistema de Tesorería
+                </a>
+            </div>
+            <div class="navbar-nav ms-auto">
+                <button class="btn btn-outline-light btn-sm me-2" onclick="mostrarVista('apoderado')" id="btnPortalApoderado">
+                    👨‍👩‍👧‍👦 Portal Apoderados
+                </button>
+                <button class="btn btn-outline-light btn-sm" onclick="mostrarVista('admin')" id="btnAdmin" style="display: none;">
+                    🔧 Administración
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Vista Portal Apoderados -->
+        <div id="vistaApoderado" style="display: none;">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header text-center bg-info text-white">
+                            <div class="d-flex justify-content-center align-items-center mb-2">
+                                <img src="leumag.png" alt="Leumag" class="portal-logo me-2">
+                                <img src="experimentalin.png" alt="Experimentalin" class="portal-logo">
+                            </div>
+                            <h4 class="mb-0">👨‍👩‍👧‍👦 Portal de Apoderados</h4>
+                            <p class="mb-0"><small>Consulte el estado de cuotas de su pupilo</small></p>
+                        </div>
+                        <div class="card-body">
+                            <form id="loginApoderado" onsubmit="event.preventDefault(); consultarAlumno();">
+                                <div class="mb-3">
+                                    <label for="rutAlumno" class="form-label">RUT del Alumno:</label>
+                                    <input type="text" class="form-control" id="rutAlumno" 
+                                           placeholder="12.345.678-9" required 
+                                           oninput="formatearRUTInput(this)">
+                                    <div class="form-text">Ingrese el RUT completo con puntos y guión</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="apellidoAlumno" class="form-label">Apellido del Alumno:</label>
+                                    <input type="text" class="form-control" id="apellidoAlumno" 
+                                           placeholder="Apellido paterno" required>
+                                    <div class="form-text">Ingrese solo el primer apellido</div>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        🔍 Consultar Estado de Cuotas
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista de Consulta del Alumno -->
+        <div id="vistaConsultaAlumno" style="display: none;">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center bg-success text-white">
+                            <h5 class="mb-0" id="tituloConsulta">Estado de Cuotas</h5>
+                            <button class="btn btn-outline-light btn-sm" onclick="volverLogin()">
+                                ← Realizar otra consulta
+                            </button>
+                        </div>
+                        <div class="card-body" id="contenidoConsulta">
+                            <!-- Contenido dinámico de la consulta -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Administración -->
+        <div id="vistaAdmin">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Control de Cuotas por Alumno</h5>
+                            <div>
+                                <input type="file" id="csvFile" class="form-control d-none" accept=".csv">
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('csvFile').click()">
+                                        📁 Cargar CSV
+                                    </button>
+                                    <button class="btn btn-success btn-sm" onclick="iniciarProcesomatricula()">
+                                        ➕ Matricular Alumno
+                                    </button>
+                                    <button class="btn btn-warning btn-sm" onclick="forzarRecargaCSV()">
+                                        🔄 Recargar Datos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Filtros -->
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="filtroNombre" class="form-label">Nombre:</label>
+                                    <input type="text" class="form-control" id="filtroNombre" placeholder="Buscar por nombre">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="filtroCurso" class="form-label">Curso:</label>
+                                    <select class="form-select" id="filtroCurso">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filtroEstado" class="form-label">Estado:</label>
+                                    <select class="form-select" id="filtroEstado">
+                                        <option value="">Todos</option>
+                                        <option value="al-dia">Al día</option>
+                                        <option value="pendiente">Con cuotas pendientes</option>
+                                        <option value="ingreso-tardio">Ingreso tardío</option>
+                                        <option value="moroso">Moroso (0 cuotas)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="d-grid gap-1">
+                                        <button class="btn btn-secondary btn-sm" onclick="limpiarFiltros()">
+                                            Limpiar
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="mostrarHistorialEliminaciones()">
+                                            📝 Historial
+                                        </button>
+                                        <button class="btn btn-warning btn-sm" onclick="envioMasivoMorosos()">
+                                            📧 Correos
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="verificarConsistenciaCSV()">
+                                            🔍 Verificar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resumen estadístico -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total Alumnos</h6>
+                                            <h4 class="text-primary" id="totalAlumnos">0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total Recaudado</h6>
+                                            <h4 class="text-success" id="totalRecaudado">$0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Por Recaudar</h6>
+                                            <h4 class="text-warning" id="porRecaudar">$0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Alumnos Morosos</h6>
+                                            <h4 class="text-danger" id="alumnosMorosos">0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabla de alumnos -->
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover" id="tablaAlumnos">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>RUT</th>
+                                            <th>Curso</th>
+                                            <th>Arancel</th>
+                                            <th>Beca</th>
+                                            <th>Pagado</th>
+                                            <th>Pendiente</th>
+                                            <th>Estado Cuotas</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpoTabla">
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted">
+                                                Cargue el archivo CSV para ver los datos
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer institucional -->
+    <footer class="mt-5 py-4 bg-light border-top">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                        <img src="leumag.png" alt="Leumag" class="footer-logo me-3">
+                        <img src="experimentalin.png" alt="Experimentalin" class="footer-logo me-3">
+                        <div>
+                            <h6 class="mb-1">Sistema de Tesorería</h6>
+                            <small class="text-muted">Gestión Académica y Financiera</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                    <small class="text-muted">
+                        © 2024 Leumag & Experimentalin<br>
+                        Todos los derechos reservados
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal para detalle de cuotas -->
+    <div class="modal fade" id="modalDetalle" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitulo">Detalle de Cuotas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalCuerpo">
+                    <!-- Contenido dinámico -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para medios de pago -->
+    <div class="modal fade" id="modalMediosPago" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">💰 Procesar Pago</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalCuerpoMediosPago">
+                    <!-- Contenido dinámico -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarPago">
+                        ✓ Confirmar Pago
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para proceso de matrícula -->
+    <div class="modal fade" id="modalMatricula" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <div class="d-flex align-items-center">
+                        <img src="leumag.png" alt="Leumag" class="modal-logo me-2">
+                        <img src="experimentalin.png" alt="Experimentalin" class="modal-logo me-3">
+                        <h5 class="modal-title mb-0">🎓 Proceso de Matrícula</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalCuerpoMatricula">
+                    <!-- Contenido dinámico del proceso de matrícula -->
+                </div>
+                <div class="modal-footer" id="modalFooterMatricula">
+                    <!-- Botones dinámicos -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
