@@ -1,22 +1,7 @@
 [build]
-  # This is a Node.js application, not a static site
-  command = "npm install"
   publish = "."
 
-[build.environment]
-  NODE_VERSION = "18"
-
-# For Netlify Functions (if needed)
-[functions]
-  directory = "netlify/functions"
-
-# Redirect all requests to the Node.js server
 [[redirects]]
   from = "/*"
-  to = "/.netlify/functions/server"
+  to = "/index.html"
   status = 200
-
-# Environment variables
-[context.production.environment]
-  NODE_ENV = "production"
-  PORT = "8888"
