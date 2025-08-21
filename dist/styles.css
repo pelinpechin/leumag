@@ -1,0 +1,322 @@
+/* Sistema de Tesorería - Estilos CSS */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.navbar-logo {
+    height: 40px;
+    width: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: white;
+    padding: 2px;
+}
+
+.portal-logo {
+    height: 30px;
+    width: auto;
+    border-radius: 4px;
+    background: white;
+    padding: 2px;
+    opacity: 0.95;
+}
+
+.modal-logo {
+    height: 25px;
+    width: auto;
+    border-radius: 3px;
+    background: white;
+    padding: 1px;
+}
+
+.footer-logo {
+    height: 35px;
+    width: auto;
+    border-radius: 4px;
+    background: white;
+    padding: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table-responsive {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.badge-cuota {
+    font-size: 0.75rem;
+    margin: 1px;
+    min-width: 40px;
+}
+
+.cuota-pagada {
+    background-color: #198754 !important;
+    color: white;
+}
+
+.cuota-pendiente {
+    background-color: #ffc107 !important;
+    color: black;
+}
+
+.cuota-vacia {
+    background-color: #6c757d !important;
+    color: white;
+}
+
+.cuota-vencida {
+    background-color: #dc3545 !important;
+    color: white;
+    animation: blink-red 1.5s infinite;
+}
+
+@keyframes blink-red {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.6; }
+}
+
+.cuota-abono-pendiente {
+    background: linear-gradient(45deg, #ffc107 50%, #28a745 50%) !important;
+    color: white;
+    position: relative;
+}
+
+.cuota-abono-vencida {
+    background: linear-gradient(45deg, #dc3545 50%, #28a745 50%) !important;
+    color: white;
+    position: relative;
+    animation: blink-red 1.5s infinite;
+}
+
+.estado-al-dia {
+    color: #198754;
+    font-weight: bold;
+}
+
+.estado-pendiente {
+    color: #fd7e14;
+    font-weight: bold;
+}
+
+.estado-ingreso-tardio {
+    color: #6f42c1;
+    font-weight: bold;
+}
+
+.estado-moroso {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.moneda-chile {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.rut-formato {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.progress-cuotas {
+    height: 8px;
+}
+
+.btn-sm {
+    font-size: 0.875rem;
+}
+
+.navbar-text {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.card-title {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.card h4 {
+    margin-bottom: 0;
+    font-size: 1.5rem;
+}
+
+.table th {
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-top: none;
+}
+
+.table td {
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.cuotas-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.detalle-cuota {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+.detalle-cuota.pagada {
+    border-color: #198754;
+    background-color: #d1e7dd;
+}
+
+.detalle-cuota.pendiente {
+    border-color: #ffc107;
+    background-color: #fff3cd;
+}
+
+.detalle-cuota.vencida {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+}
+
+.detalle-cuota.abono-pendiente {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #fff3cd 50%, #d1e7dd 50%);
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.3);
+}
+
+.detalle-cuota.abono-vencida {
+    border-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da 50%, #d1e7dd 50%);
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+}
+
+/* Estilos para selección de cuotas */
+.detalle-cuota.position-relative {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.detalle-cuota:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.detalle-cuota.pagada {
+    cursor: default;
+}
+
+.detalle-cuota.pagada:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.cuota-checkbox {
+    transform: scale(1.2);
+    margin: 0;
+}
+
+.cuota-checkbox:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.detalle-cuota input:checked + * {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-radius: 0.375rem;
+}
+
+/* Animación para cuotas seleccionadas */
+.detalle-cuota:has(input:checked) {
+    border-color: #198754 !important;
+    background-color: #d1e7dd !important;
+    box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.25);
+}
+
+/* Botones de pago */
+.btn-success {
+    animation: pulse-success 2s infinite;
+}
+
+@keyframes pulse-success {
+    0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+}
+
+/* Resumen de selección */
+.bg-light {
+    border: 2px solid #e9ecef;
+    border-radius: 0.5rem !important;
+}
+
+/* Estilos para eliminación de alumnos */
+.btn-group-vertical {
+    max-width: 120px;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    transition: all 0.2s ease;
+}
+
+.modal-eliminar .alert-warning {
+    border-left: 4px solid #f0ad4e;
+}
+
+.form-check-input:checked {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.historial-eliminaciones .badge {
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    
+    .cuotas-container {
+        justify-content: center;
+    }
+    
+    .card h4 {
+        font-size: 1.2rem;
+    }
+    
+    .detalle-cuota {
+        margin-bottom: 1rem;
+    }
+    
+    .cuota-checkbox {
+        transform: scale(1.5);
+    }
+    
+    .btn-group-vertical .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}

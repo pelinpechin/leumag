@@ -1,4 +1,5 @@
 [build]
   base = "."
-  publish = "."
+  publish = "dist"
   functions = "netlify/functions"
+  command = "npm install && cp index.html script.js styles.css *.png *.csv _redirects dist/"
