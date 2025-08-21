@@ -19,10 +19,10 @@ const DATOS_ESTABLECIMIENTO = {
 
 // Configuración de Webpay Plus (Transbank)
 const WEBPAY_CONFIG = {
-    // URLs del backend
-    baseUrl: window.location.origin.includes('localhost:3000') ? 'http://localhost:3001' : window.location.origin,
-    createUrl: '/api/webpay/create',
-    resultUrl: '/api/webpay/result',
+    // URLs del backend - ahora usando Netlify Functions
+    baseUrl: window.location.origin.includes('localhost:3002') ? 'http://localhost:3002' : window.location.origin,
+    createUrl: '/.netlify/functions/api/webpay/iniciar',
+    resultUrl: '/.netlify/functions/api/webpay/result',
     ambiente: "integration", // "integration" o "production"
 };
 
@@ -5222,7 +5222,7 @@ async function confirmarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
             : `📊 Estado de Cuenta - ${alumno.nombre}`;
         
         // Enviar correo via API
-        const response = await fetch('/api/correo/enviar', {
+        const response = await fetch('/.netlify/functions/api/correo/enviar', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -5430,7 +5430,7 @@ async function ejecutarEnvioMasivo(rutAlumnos) {
         }
         
         // Enviar correos via API
-        const response = await fetch('/api/correo/enviar-masivo', {
+        const response = await fetch('/.netlify/functions/api/correo/enviar-masivo', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
