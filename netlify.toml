@@ -5,25 +5,21 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirect API calls to Netlify Functions
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
 
-# Redirect Webpay calls to functions
 [[redirects]]
   from = "/webpay/*"
   to = "/.netlify/functions/api/webpay/:splat"
   status = 200
 
-# Redirect correo calls to functions  
 [[redirects]]
   from = "/correo/*"
   to = "/.netlify/functions/api/correo/:splat"
   status = 200
 
-# Serve static files for everything else
 [[redirects]]
   from = "/*"
   to = "/index.html"
