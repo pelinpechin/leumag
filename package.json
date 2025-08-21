@@ -27,10 +27,10 @@
     "fs-extra": "^11.3.1",
     "nodemailer": "^7.0.5",
     "serverless-http": "^3.2.0",
-    "transbank-sdk": "^4.0.0"
+    "transbank-sdk": "^6.1.0"
   },
   "devDependencies": {
-    "live-server": "^1.2.2",
+    "live-server": "^1.2.0",
     "nodemon": "^3.1.10"
   },
   "engines": {
