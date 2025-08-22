@@ -5223,6 +5223,9 @@ async function confirmarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
         
         // Enviar correo via API
         const emailUrl = window.location.origin.includes('localhost') ? '/api/correo/enviar' : '/.netlify/functions/api/correo/enviar';
+        console.log('🔧 Enviando correo a URL:', emailUrl);
+        console.log('🔧 Origen detectado:', window.location.origin);
+        
         const response = await fetch(emailUrl, {
             method: 'POST',
             headers: {
