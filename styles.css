@@ -127,6 +127,8 @@ body {
 .rut-formato {
     font-family: 'Courier New', monospace;
     font-size: 0.9rem;
+    white-space: nowrap;
+    display: inline-block;
 }
 
 .progress-cuotas {
