@@ -550,6 +550,15 @@ function determinarEstado(alumno) {
         // Determinar hasta qué cuota debería haber pagado (agosto = cuota 6)
         const cuotaActualEsperada = Math.max(1, mesActual - 2); // Marzo=1, Abril=2, ..., Agosto=6
         
+        // Verificar si pagó la cuota del mes actual
+        const cuotaMesActual = alumno.cuotas[cuotaActualEsperada - 1]; // -1 porque el array empieza en 0
+        const pagoCuotaActual = cuotaMesActual && cuotaMesActual.pagada;
+        
+        // Si pagó la cuota actual, está al día aunque tenga cuotas anteriores vencidas
+        if (pagoCuotaActual) {
+            return 'al-dia';
+        }
+        
         // Verificar si tiene todas las cuotas pagadas hasta el mes actual
         const cuotasHastaMesActual = alumno.cuotas.slice(0, cuotaActualEsperada);
         const cuotasPendientesDelPeriodo = cuotasHastaMesActual.filter(cuota => !cuota.pagada);
