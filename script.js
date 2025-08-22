@@ -3127,15 +3127,10 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <label for="nombreCompleto" class="form-label">Nombre Completo <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="nombreCompleto" 
-                                       placeholder="Nombres y apellidos completos" required>
-                            </div>
-                            
-                            <div class="mb-3">
                                 <label for="rutAlumno" class="form-label">RUT <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="rutAlumno" 
-                                       placeholder="12.345.678-9" required oninput="formatearRUTInput(this)"
+                                       placeholder="12.345.678-9" required 
+                                       oninput="formatearRUTInput(this); verificarAlumnoExistente();"
                                        onblur="verificarAlumnoExistente()">
                                 <div id="infoAlumnoExistente" class="mt-2 d-none">
                                     <div class="alert alert-info">
@@ -3143,6 +3138,13 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
                                         <span id="textoAlumnoExistente"></span>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="nombreCompleto" class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nombreCompleto" 
+                                       placeholder="Nombres y apellidos completos" required>
+                                <small class="form-text text-muted">Se completará automáticamente si el RUT ya existe</small>
                             </div>
                             
                             <div class="row">
@@ -3309,23 +3311,30 @@ function verificarAlumnoExistente() {
     const cursoSelect = document.getElementById('cursoMatricula');
     const fechaNacInput = document.getElementById('fechaNacimiento');
     
-    if (!rutInput.value) {
+    // Limpiar campos si no hay RUT
+    if (!rutInput.value || rutInput.value.length < 8) {
         infoDiv.classList.add('d-none');
+        nombreInput.value = '';
+        nombreInput.readOnly = false;
+        nombreInput.placeholder = 'Nombres y apellidos completos';
+        if (fechaNacInput) fechaNacInput.value = '';
+        estadoMatricula.alumnoExistente = null;
         return;
     }
     
     // Buscar alumno existente en los datos
-    const rutLimpio = rutInput.value.replace(/[.-]/g, '');
+    const rutLimpio = rutInput.value.replace(/[.-\s]/g, '');
     const alumnoExistente = datosAlumnos.find(alumno => 
-        alumno.rut.replace(/[.-]/g, '') === rutLimpio);
+        alumno.rut.replace(/[.-\s]/g, '') === rutLimpio);
     
     if (alumnoExistente) {
-        // Auto-completar todos los datos del alumno
+        // Auto-completar INMEDIATAMENTE el nombre
         nombreInput.value = alumnoExistente.nombre;
         nombreInput.readOnly = true;
+        nombreInput.classList.add('bg-light');
         
         // Auto-completar fecha de nacimiento si existe
-        if (alumnoExistente.fechaNacimiento) {
+        if (fechaNacInput && alumnoExistente.fechaNacimiento) {
             fechaNacInput.value = alumnoExistente.fechaNacimiento;
         }
         
@@ -3334,15 +3343,17 @@ function verificarAlumnoExistente() {
         
         if (cursoSiguiente !== 'EGRESADO') {
             textoSpan.innerHTML = `
-                <strong>✅ Alumno encontrado - Datos auto-completados</strong><br>
-                Curso actual (${AÑO_ESCOLAR_ACTUAL}): ${alumnoExistente.curso}<br>
-                <strong class="text-primary">Curso para matrícula ${AÑO_MATRICULA_SIGUIENTE}: ${cursoSiguiente}</strong><br>
-                <small class="text-muted">Todos los campos se han completado automáticamente</small>
+                <strong>✅ Alumno encontrado en el sistema</strong><br>
+                <strong class="text-success">${alumnoExistente.nombre}</strong><br>
+                Curso actual (${AÑO_ESCOLAR_ACTUAL}): <strong>${alumnoExistente.curso}</strong><br>
+                Curso para matrícula ${AÑO_MATRICULA_SIGUIENTE}: <strong class="text-primary">${cursoSiguiente}</strong>
             `;
             
             // Pre-seleccionar curso siguiente
-            cursoSelect.value = cursoSiguiente;
-            calcularCostosMatricula();
+            if (cursoSelect) {
+                cursoSelect.value = cursoSiguiente;
+                calcularCostosMatricula();
+            }
             
             // Guardar referencia del alumno existente para usar sus datos
             estadoMatricula.alumnoExistente = alumnoExistente;
@@ -3350,17 +3361,21 @@ function verificarAlumnoExistente() {
         } else {
             textoSpan.innerHTML = `
                 <strong>✅ Alumno encontrado</strong><br>
-                Curso actual (${AÑO_ESCOLAR_ACTUAL}): ${alumnoExistente.curso}<br>
-                <strong class="text-success">¡Alumno egresa este año!</strong><br>
-                <small class="text-warning">No requiere matrícula para el próximo año</small>
+                <strong class="text-success">${alumnoExistente.nombre}</strong><br>
+                Curso actual (${AÑO_ESCOLAR_ACTUAL}): <strong>${alumnoExistente.curso}</strong><br>
+                <span class="text-warning">⚠️ Alumno egresa este año - No requiere re-matrícula</span>
             `;
         }
         
         infoDiv.classList.remove('d-none');
     } else {
+        // RUT no encontrado - limpiar campos
         infoDiv.classList.add('d-none');
+        nombreInput.value = '';
         nombreInput.readOnly = false;
-        fechaNacInput.value = '';
+        nombreInput.classList.remove('bg-light');
+        nombreInput.placeholder = 'Ingrese nombre completo (alumno nuevo)';
+        if (fechaNacInput) fechaNacInput.value = '';
         estadoMatricula.alumnoExistente = null;
     }
 }
