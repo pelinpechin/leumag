@@ -5080,16 +5080,10 @@ function enviarCorreoInformativo(rutAlumno) {
 }
 
 function limpiarTextoEmail(texto) {
-    // Reemplazar caracteres problemáticos que pueden causar signos de interrogación
+    // Solo quitar emojis problemáticos, mantener acentos españoles
     return texto
-        .replace(/á/g, 'a').replace(/Á/g, 'A')
-        .replace(/é/g, 'e').replace(/É/g, 'E')
-        .replace(/í/g, 'i').replace(/Í/g, 'I')
-        .replace(/ó/g, 'o').replace(/Ó/g, 'O')
-        .replace(/ú/g, 'u').replace(/Ú/g, 'U')
-        .replace(/ñ/g, 'n').replace(/Ñ/g, 'N')
-        .replace(/ü/g, 'u').replace(/Ü/g, 'U')
-        .replace(/[^\x00-\x7F]/g, ""); // Quitar cualquier caracter no ASCII
+        .replace(/📋|📊|💰|⚠️|✅|⏳|🏫|🔧|❌|✨|📧|⭐|🎯|📄|💡|🚀/g, '') // Quitar emojis
+        .replace(/[^\u0000-\u007F\u00C0-\u00FF]/g, ''); // Mantener caracteres latinos básicos y acentuados
 }
 
 function generarMensajeMorosidad(alumno, datosCorreo) {
@@ -5113,16 +5107,16 @@ ${cuotasVencidas.map(cuota =>
 ).join('\n')}
 
 IMPORTANTE:
-Le solicitamos regularizar esta situacion a la brevedad posible para evitar inconvenientes academicos.
+Le solicitamos regularizar esta situación a la brevedad posible para evitar inconvenientes académicos.
 
 Para realizar el pago puede:
-• Dirigirse a administracion del establecimiento
-• Realizar el pago online a traves de nuestro sistema
+• Dirigirse a administración del establecimiento
+• Realizar el pago online a través de nuestro sistema
 
 Fecha de este aviso: ${fechaActual}
 
 Saludos cordiales,
-Administracion - Sistema de Tesoreria
+Administración - Sistema de Tesorería
     `.trim();
     
     return limpiarTextoEmail(mensaje);
@@ -5149,12 +5143,12 @@ ${alumno.cuotas.slice(0, alumno.numeroCuotas).map(cuota => {
     return `• Cuota ${cuota.numero} (${obtenerMesVencimiento(cuota.numero)}): ${estado}`;
 }).join('\n')}
 
-Agradecemos la confianza depositada en nuestra institucion.
+Agradecemos la confianza depositada en nuestra institución.
 
 Fecha de este informe: ${fechaActual}
 
 Saludos cordiales,
-Administracion - Sistema de Tesoreria
+Administración - Sistema de Tesorería
     `.trim();
     
     return limpiarTextoEmail(mensaje);
