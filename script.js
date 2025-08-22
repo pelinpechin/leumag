@@ -5422,49 +5422,49 @@ function aplicarAjustesEspecificos() {
     
     console.log('🔧 Aplicando ajustes específicos...');
     
-    // 1. TRIVIÑO OJEDA IGNACIO ALEJANDRO - Cuotas 1 y 2 en $0 y arancel $812,960
-    const trivinoIgnacio = datosAlumnos.find(a => 
-        a.nombre.includes('TRIVINO OJEDA IGNACIO') || 
-        a.rut === '22.414.534-9'
+    // 1. TRIVIÑO OJEDA FRANCISCA - Cuotas 1 y 2 en $0 y arancel $812,960
+    const trivinoFrancisca = datosAlumnos.find(a => 
+        a.nombre.includes('TRIVINO OJEDA FRANCISCA') || 
+        a.rut === '23.437.771-K'
     );
     
-    if (trivinoIgnacio) {
-        console.log(`🔧 Ajustando TRIVIÑO OJEDA IGNACIO - RUT: ${trivinoIgnacio.rut}`);
+    if (trivinoFrancisca) {
+        console.log(`🔧 Ajustando TRIVIÑO OJEDA FRANCISCA - RUT: ${trivinoFrancisca.rut}`);
         
         // Corregir arancel
-        const arancelAnterior = trivinoIgnacio.arancel;
-        trivinoIgnacio.arancel = 812960;
-        trivinoIgnacio.montoNeto = trivinoIgnacio.arancel - trivinoIgnacio.beca;
+        const arancelAnterior = trivinoFrancisca.arancel;
+        trivinoFrancisca.arancel = 812960;
+        trivinoFrancisca.montoNeto = trivinoFrancisca.arancel - trivinoFrancisca.beca;
         console.log(`   Arancel: ${formatearMoneda(arancelAnterior)} → ${formatearMoneda(812960)}`);
         
-        // Ajustar cuotas 1 y 2 a $0
-        if (trivinoIgnacio.cuotas && trivinoIgnacio.cuotas.length >= 2) {
-            const cuota1Anterior = trivinoIgnacio.cuotas[0].monto;
-            const cuota2Anterior = trivinoIgnacio.cuotas[1].monto;
+        // Ajustar cuotas 1 y 2 a $0 (ya están en 0 según CSV, pero verificar)
+        if (trivinoFrancisca.cuotas && trivinoFrancisca.cuotas.length >= 2) {
+            const cuota1Anterior = trivinoFrancisca.cuotas[0].monto;
+            const cuota2Anterior = trivinoFrancisca.cuotas[1].monto;
             
-            trivinoIgnacio.cuotas[0].monto = 0;
-            trivinoIgnacio.cuotas[0].pagada = false;
-            trivinoIgnacio.cuotas[1].monto = 0;
-            trivinoIgnacio.cuotas[1].pagada = false;
+            trivinoFrancisca.cuotas[0].monto = 0;
+            trivinoFrancisca.cuotas[0].pagada = false;
+            trivinoFrancisca.cuotas[1].monto = 0;
+            trivinoFrancisca.cuotas[1].pagada = false;
             
             // Recalcular total pagado
             let nuevoTotalPagado = 0;
-            trivinoIgnacio.cuotas.forEach(cuota => {
+            trivinoFrancisca.cuotas.forEach(cuota => {
                 if (cuota.pagada) {
                     nuevoTotalPagado += cuota.monto;
                 }
             });
             
-            trivinoIgnacio.totalPagadoReal = nuevoTotalPagado;
-            trivinoIgnacio.totalPagado = nuevoTotalPagado;
-            trivinoIgnacio.pendiente = Math.max(0, trivinoIgnacio.montoNeto - nuevoTotalPagado);
-            trivinoIgnacio.estado = determinarEstado(trivinoIgnacio);
+            trivinoFrancisca.totalPagadoReal = nuevoTotalPagado;
+            trivinoFrancisca.totalPagado = nuevoTotalPagado;
+            trivinoFrancisca.pendiente = Math.max(0, trivinoFrancisca.montoNeto - nuevoTotalPagado);
+            trivinoFrancisca.estado = determinarEstado(trivinoFrancisca);
             
             console.log(`   Cuota 1: ${formatearMoneda(cuota1Anterior)} → $0`);
             console.log(`   Cuota 2: ${formatearMoneda(cuota2Anterior)} → $0`);
-            console.log(`   Nuevo monto neto: ${formatearMoneda(trivinoIgnacio.montoNeto)}`);
+            console.log(`   Nuevo monto neto: ${formatearMoneda(trivinoFrancisca.montoNeto)}`);
             console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
-            console.log(`   Nuevo pendiente: ${formatearMoneda(trivinoIgnacio.pendiente)}`);
+            console.log(`   Nuevo pendiente: ${formatearMoneda(trivinoFrancisca.pendiente)}`);
             
             ajustesRealizados++;
         }
@@ -5522,7 +5522,7 @@ function aplicarAjustesEspecificos() {
         alert(`✅ Ajustes específicos aplicados!
 
 📋 Cambios realizados:
-• TRIVIÑO OJEDA IGNACIO: 
+• TRIVIÑO OJEDA FRANCISCA: 
   - Arancel → $812.960
   - Cuotas 1 y 2 → $0
 • SEGURA MANCILLA JULIETA: Verificada cuota 1 = $74,000
