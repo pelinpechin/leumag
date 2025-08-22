@@ -1144,6 +1144,15 @@ function actualizarEstadisticas() {
     const diferenciaTotal = Math.abs(totalSistema - totalCSV);
     const coincideTotales = diferenciaTotal < 1; // Tolerancia de $1
     
+    // Debug temporal
+    if (diferenciaTotal > 1000) {
+        console.log('🔍 DEBUG TOTALES:');
+        console.log(`   Total Sistema: ${formatearMoneda(totalSistema)} (${totalSistema})`);
+        console.log(`   Total CSV: ${formatearMoneda(totalCSV)} (${totalCSV})`);
+        console.log(`   Diferencia: ${formatearMoneda(diferenciaTotal)} (${diferenciaTotal})`);
+        console.log(`   Alumnos en cálculo: ${datosParaEstadisticas.length}`);
+    }
+    
     document.getElementById('totalAlumnos').textContent = totalAlumnos.toLocaleString();
     document.getElementById('totalRecaudado').textContent = formatearMoneda(totalRecaudado);
     document.getElementById('porRecaudar').textContent = formatearMoneda(totalPorRecaudar);
