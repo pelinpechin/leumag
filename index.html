@@ -194,11 +194,20 @@
                                 <div class="col-12">
                                     <div class="card bg-info bg-opacity-10">
                                         <div class="card-body">
-                                            <h6 class="card-title text-info">🔍 Verificación de Consistencia</h6>
-                                            <div id="comparacionTotales" class="text-muted">
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Sistema vs CSV:</span>
-                                                    <span>Calculando...</span>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title text-info mb-1">🔍 Verificación de Consistencia</h6>
+                                                    <div id="comparacionTotales" class="text-muted">
+                                                        <div class="d-flex justify-content-between">
+                                                            <span>Sistema vs CSV:</span>
+                                                            <span>Calculando...</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <button class="btn btn-outline-info btn-sm" onclick="descargarBaseDeDatos()" title="Descargar base de datos completa para análisis">
+                                                        📁 Descargar BD
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
