@@ -566,10 +566,10 @@ function determinarEstado(alumno) {
             return 'al-dia'; // No tiene cuotas vencidas por fecha
         }
         
-        // NUEVA LÓGICA: Si tiene cuotas vencidas del período actual, debe ser 'pendiente'
+        // NUEVA LÓGICA: Si tiene cuotas vencidas del período actual, debe ser 'moroso'
         // independientemente de si es ingreso tardío
         if (cuotasRealmenteVencidas.length > 0) {
-            return 'pendiente';
+            return 'moroso';
         }
     }
     
@@ -588,7 +588,7 @@ function determinarEstado(alumno) {
         return 'ingreso-tardio';
     }
     
-    return 'pendiente';
+    return 'moroso';
 }
 
 function actualizarCursos() {
@@ -891,7 +891,7 @@ function mostrarDetalle(rut) {
     }
     
     // Agregar sección de correo si el alumno tiene morosidad o deuda pendiente
-    const tieneDeuda = alumno.estado === 'moroso' || alumno.estado === 'pendiente' || alumno.estado === 'ingreso-tardio';
+    const tieneDeuda = alumno.estado === 'moroso' || alumno.estado === 'ingreso-tardio';
     const datosCorreo = datosCorreos.get(alumno.rut);
     
     if (tieneDeuda || datosCorreo) {
@@ -5824,7 +5824,7 @@ function registrarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
 
 function envioMasivoMorosos() {
     const alumnosMorosos = datosAlumnos.filter(alumno => 
-        alumno.estado === 'moroso' || alumno.estado === 'pendiente' || alumno.estado === 'ingreso-tardio'
+        alumno.estado === 'moroso' || alumno.estado === 'ingreso-tardio'
     );
     
     if (alumnosMorosos.length === 0) {
