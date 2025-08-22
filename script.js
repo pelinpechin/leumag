@@ -3429,8 +3429,35 @@ function seleccionarAlumno(alumno) {
     console.log('👤 Alumno seleccionado:', alumno);
     
     // Auto-completar todos los campos
-    document.getElementById('nombreCompleto').value = alumno.nombre;
-    document.getElementById('rutAlumno').value = alumno.rut;
+    const nombreInput = document.getElementById('nombreCompleto');
+    const rutInput = document.getElementById('rutAlumno');
+    
+    console.log('📋 Campos encontrados:', {
+        nombreInput: !!nombreInput,
+        rutInput: !!rutInput
+    });
+    
+    // Completar nombre
+    if (nombreInput) {
+        nombreInput.value = alumno.nombre;
+        console.log('✅ Nombre completado:', alumno.nombre);
+    }
+    
+    // Completar RUT
+    if (rutInput) {
+        rutInput.value = alumno.rut;
+        rutInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event
+        rutInput.dispatchEvent(new Event('change', { bubbles: true })); // Trigger change event
+        console.log('✅ RUT completado:', alumno.rut);
+        
+        // Forzar actualización visual
+        setTimeout(() => {
+            rutInput.value = alumno.rut;
+            console.log('🔄 RUT reconfirmado:', rutInput.value);
+        }, 100);
+    } else {
+        console.log('❌ Campo RUT no encontrado');
+    }
     
     // Auto-completar fecha de nacimiento si existe
     const fechaNacInput = document.getElementById('fechaNacimiento');
