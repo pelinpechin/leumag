@@ -54,6 +54,29 @@ function inicializarSistema() {
     setTimeout(() => {
         console.log('🎯 DATOS FINALES CARGADOS:');
         console.log(`👥 Total alumnos: ${datosAlumnos.length}`);
+        
+        // AGREGAR ALUMNO DE PRUEBA para testing
+        const alumnoPrueba = {
+            rut: '27289800-6',
+            nombre: 'JUAN CARLOS PÉREZ GONZÁLEZ',
+            curso: '8 BASICO A',
+            fechaNacimiento: '2010-05-15',
+            numeroCuotas: 10,
+            totalAPagar: 1600000,
+            totalPagado: 960000,
+            pendiente: 640000,
+            estado: 'moroso',
+            añoEscolar: 2025,
+            cuotas: []
+        };
+        
+        // Solo agregar si no existe ya
+        if (!datosAlumnos.find(a => a.rut.replace(/[.-]/g, '') === '272898006')) {
+            datosAlumnos.push(alumnoPrueba);
+            console.log('✅ Agregado alumno de prueba: Juan Carlos Pérez González - RUT: 27.289.800-6');
+        }
+        
+        console.log(`👥 Total alumnos (con prueba): ${datosAlumnos.length}`);
         if (datosAlumnos.length > 0) {
             console.log('📋 Primeros 3 alumnos:');
             datosAlumnos.slice(0, 3).forEach((alumno, i) => {
@@ -3142,8 +3165,9 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
                                 <label for="rutAlumno" class="form-label">RUT <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="rutAlumno" 
                                        placeholder="12.345.678-9" required 
-                                       oninput="formatearRUTInput(this); verificarAlumnoExistente();"
-                                       onblur="verificarAlumnoExistente()">
+                                       oninput="formatearRUTInput(this); setTimeout(verificarAlumnoExistente, 100);"
+                                       onblur="verificarAlumnoExistente()"
+                                       onkeyup="setTimeout(verificarAlumnoExistente, 100);">
                                 <div id="infoAlumnoExistente" class="mt-2 d-none">
                                     <div class="alert alert-info">
                                         <strong>Alumno existente detectado</strong><br>
@@ -3316,12 +3340,21 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
 }
 
 function verificarAlumnoExistente() {
+    console.log('🔄 verificarAlumnoExistente() ejecutándose...');
+    
     const rutInput = document.getElementById('rutAlumno');
     const infoDiv = document.getElementById('infoAlumnoExistente');
     const textoSpan = document.getElementById('textoAlumnoExistente');
     const nombreInput = document.getElementById('nombreCompleto');
     const cursoSelect = document.getElementById('cursoMatricula');
     const fechaNacInput = document.getElementById('fechaNacimiento');
+    
+    console.log('📋 Elementos encontrados:', {
+        rutInput: !!rutInput,
+        infoDiv: !!infoDiv,
+        nombreInput: !!nombreInput,
+        rutValue: rutInput?.value || 'SIN VALOR'
+    });
     
     // Limpiar campos si no hay RUT
     if (!rutInput.value || rutInput.value.length < 8) {
