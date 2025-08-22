@@ -5422,7 +5422,7 @@ function aplicarAjustesEspecificos() {
     
     console.log('🔧 Aplicando ajustes específicos...');
     
-    // 1. TRIVIÑO OJEDA IGNACIO ALEJANDRO - Cuotas 1 y 2 en $0
+    // 1. TRIVIÑO OJEDA IGNACIO ALEJANDRO - Cuotas 1 y 2 en $0 y arancel $812,960
     const trivinoIgnacio = datosAlumnos.find(a => 
         a.nombre.includes('TRIVINO OJEDA IGNACIO') || 
         a.rut === '22.414.534-9'
@@ -5430,6 +5430,12 @@ function aplicarAjustesEspecificos() {
     
     if (trivinoIgnacio) {
         console.log(`🔧 Ajustando TRIVIÑO OJEDA IGNACIO - RUT: ${trivinoIgnacio.rut}`);
+        
+        // Corregir arancel
+        const arancelAnterior = trivinoIgnacio.arancel;
+        trivinoIgnacio.arancel = 812960;
+        trivinoIgnacio.montoNeto = trivinoIgnacio.arancel - trivinoIgnacio.beca;
+        console.log(`   Arancel: ${formatearMoneda(arancelAnterior)} → ${formatearMoneda(812960)}`);
         
         // Ajustar cuotas 1 y 2 a $0
         if (trivinoIgnacio.cuotas && trivinoIgnacio.cuotas.length >= 2) {
@@ -5456,6 +5462,7 @@ function aplicarAjustesEspecificos() {
             
             console.log(`   Cuota 1: ${formatearMoneda(cuota1Anterior)} → $0`);
             console.log(`   Cuota 2: ${formatearMoneda(cuota2Anterior)} → $0`);
+            console.log(`   Nuevo monto neto: ${formatearMoneda(trivinoIgnacio.montoNeto)}`);
             console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
             console.log(`   Nuevo pendiente: ${formatearMoneda(trivinoIgnacio.pendiente)}`);
             
@@ -5515,7 +5522,9 @@ function aplicarAjustesEspecificos() {
         alert(`✅ Ajustes específicos aplicados!
 
 📋 Cambios realizados:
-• TRIVIÑO OJEDA IGNACIO: Cuotas 1 y 2 → $0
+• TRIVIÑO OJEDA IGNACIO: 
+  - Arancel → $812.960
+  - Cuotas 1 y 2 → $0
 • SEGURA MANCILLA JULIETA: Verificada cuota 1 = $74,000
 
 Total alumnos ajustados: ${ajustesRealizados}`);
