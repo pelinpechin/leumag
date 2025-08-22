@@ -3017,13 +3017,21 @@ function obtenerCursoSiguiente(cursoActual) {
 
 function calcularArancelUF2026(curso) {
     // Determinar si es Básica o Media/NT
-    const esCursoBasico = ARANCELES_UF_2026.BASICA.niveles.some(nivel => 
-        curso.includes(nivel.split(' ')[0] + ' ' + nivel.split(' ')[1])
-    );
+    const esCursoBasico = ARANCELES_UF_2026.BASICA.niveles.some(nivel => {
+        if (nivel.includes(' ')) {
+            return curso.includes(nivel.split(' ')[0] + ' ' + nivel.split(' ')[1]);
+        } else {
+            return curso === nivel;
+        }
+    });
     
-    const esCursoMedio = ARANCELES_UF_2026.MEDIA_NT.niveles.some(nivel => 
-        curso.includes(nivel.split(' ')[0] + ' ' + nivel.split(' ')[1])
-    );
+    const esCursoMedio = ARANCELES_UF_2026.MEDIA_NT.niveles.some(nivel => {
+        if (nivel.includes(' ')) {
+            return curso.includes(nivel.split(' ')[0] + ' ' + nivel.split(' ')[1]);
+        } else {
+            return curso === nivel; // Para NT1 y NT2
+        }
+    });
     
     if (esCursoBasico) {
         return {
@@ -3416,20 +3424,23 @@ function calcularCostosMatricula() {
 }
 
 function validarRUT(rut) {
-    if (!rut) return false;
+    if (!rut || rut.trim() === '') return false;
     
-    // Limpiar el RUT (quitar puntos y guión)
-    const rutLimpio = rut.replace(/[.-]/g, '');
+    // Limpiar el RUT (quitar puntos, guión y espacios)
+    const rutLimpio = rut.replace(/[.\-\s]/g, '').toUpperCase();
     
-    // Validar formato básico (debe tener entre 7 y 8 dígitos + dígito verificador)
+    // Validar formato básico (debe tener entre 8 y 9 caracteres)
     if (rutLimpio.length < 8 || rutLimpio.length > 9) return false;
     
     // Separar número y dígito verificador
     const numero = rutLimpio.slice(0, -1);
-    const dv = rutLimpio.slice(-1).toUpperCase();
+    const dv = rutLimpio.slice(-1);
     
     // Validar que el número contenga solo dígitos
     if (!/^\d+$/.test(numero)) return false;
+    
+    // Validar que sea un número válido (no menor a 1 millón)
+    if (parseInt(numero) < 1000000) return false;
     
     // Calcular dígito verificador
     let suma = 0;
@@ -3497,10 +3508,12 @@ function validarFormularioAlumno() {
         return false;
     }
     
-    // Verificar si el RUT ya existe
-    const rutExiste = datosAlumnos.some(alumno => alumno.rut === rut);
-    if (rutExiste) {
-        alert('Ya existe un alumno con este RUT en el sistema');
+    // Verificar si el RUT ya existe (comparar sin formato)
+    const rutLimpio = rut.replace(/[.-]/g, '');
+    const rutExiste = datosAlumnos.some(alumno => 
+        alumno.rut.replace(/[.-]/g, '') === rutLimpio);
+    if (rutExiste && !estadoMatricula.alumnoExistente) {
+        alert('Ya existe un alumno con este RUT. Use la función de auto-completado para re-matricular.');
         return false;
     }
     
