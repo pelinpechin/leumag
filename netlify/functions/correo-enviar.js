@@ -31,6 +31,14 @@ exports.handler = async (event, context) => {
   try {
     const { destinatario, asunto, mensaje, tipoCorreo } = JSON.parse(event.body);
 
+    // Debug environment variables
+    console.log('Environment check:', {
+      hasEmailUser: !!process.env.EMAIL_USER,
+      hasEmailPass: !!process.env.EMAIL_PASS,
+      emailUserLength: process.env.EMAIL_USER ? process.env.EMAIL_USER.length : 0,
+      emailUser: process.env.EMAIL_USER ? process.env.EMAIL_USER.substring(0, 5) + '...' : 'NOT SET'
+    });
+
     // Configurar transporter
     let transporterEmail = null;
     
@@ -43,9 +51,19 @@ exports.handler = async (event, context) => {
             pass: process.env.EMAIL_PASS
           }
         });
+        
+        // Test the connection
+        await transporterEmail.verify();
+        console.log('✅ Email transporter verified successfully');
       } catch (error) {
-        console.log('Error configurando email transporter:', error);
+        console.log('❌ Error configurando/verificando email transporter:', error.message);
+        transporterEmail = null;
       }
+    } else {
+      console.log('❌ Environment variables not set:', {
+        EMAIL_USER: process.env.EMAIL_USER ? 'SET' : 'NOT SET',
+        EMAIL_PASS: process.env.EMAIL_PASS ? 'SET' : 'NOT SET'
+      });
     }
 
     if (transporterEmail) {
