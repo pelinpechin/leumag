@@ -5571,6 +5571,12 @@ function enviarCorreoMorosidad(rutAlumno) {
     }
     
     const mensaje = generarMensajeMorosidad(alumno, datosCorreo);
+    
+    if (!mensaje) {
+        alert('Este alumno pagó la cuota actual, no requiere aviso de morosidad');
+        return;
+    }
+    
     mostrarVistaPrevia('morosidad', alumno, datosCorreo, mensaje);
 }
 
@@ -5600,9 +5606,22 @@ function limpiarTextoEmail(texto) {
 }
 
 function generarMensajeMorosidad(alumno, datosCorreo) {
+    const fechaActual = new Date();
+    const mesActual = fechaActual.getMonth() + 1; // 0-11 -> 1-12
+    const cuotaActualEsperada = Math.max(1, mesActual - 2); // Marzo=1, Abril=2, ..., Agosto=6
+    
+    // Verificar si pagó la cuota del mes actual
+    const cuotaMesActual = alumno.cuotas[cuotaActualEsperada - 1];
+    const pagoCuotaActual = cuotaMesActual && cuotaMesActual.pagada;
+    
+    // Si pagó la cuota actual, no debe recibir correo de morosidad
+    if (pagoCuotaActual) {
+        return ''; // Mensaje vacío para indicar que no debe enviarse
+    }
+    
     // Filtrar solo cuotas VENCIDAS (las que aparecen en rojo), no todas las pendientes
     const cuotasVencidas = alumno.cuotas.filter(c => !c.pagada && esCuotaVencida(c.numero));
-    const fechaActual = new Date().toLocaleDateString('es-CL');
+    const fechaActualStr = fechaActual.toLocaleDateString('es-CL');
     
     const mensaje = `
 Estimado/a ${datosCorreo.apoderado},
@@ -5626,7 +5645,7 @@ Para realizar el pago puede:
 • Dirigirse a administración del establecimiento
 • Realizar el pago online a través de nuestro sistema
 
-Fecha de este aviso: ${fechaActual}
+Fecha de este aviso: ${fechaActualStr}
 
 Saludos cordiales,
 Administración - Sistema de Tesorería
@@ -5946,15 +5965,19 @@ async function ejecutarEnvioMasivo(rutAlumnos) {
             
             if (alumno && datosCorreo && datosCorreo.correo) {
                 const mensaje = generarMensajeMorosidad(alumno, datosCorreo);
-                const asunto = `⚠️ Aviso de Morosidad - ${alumno.nombre}`;
                 
-                correosParaEnviar.push({
-                    destinatario: datosCorreo.correo,
-                    asunto: asunto,
-                    mensaje: mensaje,
-                    rutAlumno: rut,
-                    nombreAlumno: alumno.nombre
-                });
+                // Solo agregar si el mensaje no está vacío (alumno realmente moroso)
+                if (mensaje) {
+                    const asunto = `⚠️ Aviso de Morosidad - ${alumno.nombre}`;
+                    
+                    correosParaEnviar.push({
+                        destinatario: datosCorreo.correo,
+                        asunto: asunto,
+                        mensaje: mensaje,
+                        rutAlumno: rut,
+                        nombreAlumno: alumno.nombre
+                    });
+                }
             }
         }
         
