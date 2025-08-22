@@ -3004,7 +3004,7 @@ const ARANCELES_UF_2026 = {
     MEDIA_NT: {
         totalUF: 32.717,
         cuotas: 10,
-        niveles: ['1 MEDIO', '2 MEDIO', '3 MEDIO', '4 MEDIO', 'NT1', 'NT2']
+        niveles: ['1 MEDIO', '2 MEDIO', '3 MEDIO', '4 MEDIO', 'NT1', 'NT2', 'NT1 A', 'NT1 B', 'NT2 A', 'NT2 B']
     }
 };
 
@@ -3012,7 +3012,11 @@ const ARANCELES_UF_2026 = {
 // REGLA: Solo educación media paga matrícula $3,500, resto $0
 const COSTOS_MATRICULA = {
     'NT1': { matricula: 0, mensualidad: 120000, cuotas: 10 },
+    'NT1 A': { matricula: 0, mensualidad: 120000, cuotas: 10 },
+    'NT1 B': { matricula: 0, mensualidad: 120000, cuotas: 10 },
     'NT2': { matricula: 0, mensualidad: 120000, cuotas: 10 },
+    'NT2 A': { matricula: 0, mensualidad: 120000, cuotas: 10 },
+    'NT2 B': { matricula: 0, mensualidad: 120000, cuotas: 10 },
     '1 BASICO A': { matricula: 0, mensualidad: 140000, cuotas: 10 },
     '1 BASICO B': { matricula: 0, mensualidad: 140000, cuotas: 10 },
     '2 BASICO A': { matricula: 0, mensualidad: 140000, cuotas: 10 },
@@ -3043,7 +3047,11 @@ const COSTOS_MATRICULA = {
 // Tabla de promoción de cursos
 const PROMOCION_CURSOS = {
     'NT1': 'NT2',
+    'NT1 A': 'NT2 A', 
+    'NT1 B': 'NT2 B',
     'NT2': '1 BASICO A',
+    'NT2 A': '1 BASICO A',
+    'NT2 B': '1 BASICO B',
     '1 BASICO A': '2 BASICO A',
     '1 BASICO B': '2 BASICO B',
     '2 BASICO A': '3 BASICO A',
@@ -3251,8 +3259,10 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
                                 <select class="form-select" id="cursoMatricula" required onchange="calcularCostosMatricula()">
                                     <option value="">Seleccionar curso...</option>
                                     <optgroup label="Educación Parvularia">
-                                        <option value="NT1">NT1 (Nivel de Transición 1)</option>
-                                        <option value="NT2">NT2 (Nivel de Transición 2)</option>
+                                        <option value="NT1 A">NT1 A (Nivel de Transición 1 - Sección A)</option>
+                                        <option value="NT1 B">NT1 B (Nivel de Transición 1 - Sección B)</option>
+                                        <option value="NT2 A">NT2 A (Nivel de Transición 2 - Sección A)</option>
+                                        <option value="NT2 B">NT2 B (Nivel de Transición 2 - Sección B)</option>
                                     </optgroup>
                                     <optgroup label="Educación Básica">
                                         <option value="1 BASICO A">1° Básico A</option>
