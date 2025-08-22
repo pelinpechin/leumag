@@ -5416,6 +5416,115 @@ El archivo incluye una columna "diferencia" que muestra las discrepancias por al
     }
 }
 
+// Función para ajustes específicos de alumnos
+function aplicarAjustesEspecificos() {
+    let ajustesRealizados = 0;
+    
+    console.log('🔧 Aplicando ajustes específicos...');
+    
+    // 1. TRIVIÑO OJEDA IGNACIO ALEJANDRO - Cuotas 1 y 2 en $0
+    const trivinoIgnacio = datosAlumnos.find(a => 
+        a.nombre.includes('TRIVINO OJEDA IGNACIO') || 
+        a.rut === '22.414.534-9'
+    );
+    
+    if (trivinoIgnacio) {
+        console.log(`🔧 Ajustando TRIVIÑO OJEDA IGNACIO - RUT: ${trivinoIgnacio.rut}`);
+        
+        // Ajustar cuotas 1 y 2 a $0
+        if (trivinoIgnacio.cuotas && trivinoIgnacio.cuotas.length >= 2) {
+            const cuota1Anterior = trivinoIgnacio.cuotas[0].monto;
+            const cuota2Anterior = trivinoIgnacio.cuotas[1].monto;
+            
+            trivinoIgnacio.cuotas[0].monto = 0;
+            trivinoIgnacio.cuotas[0].pagada = false;
+            trivinoIgnacio.cuotas[1].monto = 0;
+            trivinoIgnacio.cuotas[1].pagada = false;
+            
+            // Recalcular total pagado
+            let nuevoTotalPagado = 0;
+            trivinoIgnacio.cuotas.forEach(cuota => {
+                if (cuota.pagada) {
+                    nuevoTotalPagado += cuota.monto;
+                }
+            });
+            
+            trivinoIgnacio.totalPagadoReal = nuevoTotalPagado;
+            trivinoIgnacio.totalPagado = nuevoTotalPagado;
+            trivinoIgnacio.pendiente = Math.max(0, trivinoIgnacio.montoNeto - nuevoTotalPagado);
+            trivinoIgnacio.estado = determinarEstado(trivinoIgnacio);
+            
+            console.log(`   Cuota 1: ${formatearMoneda(cuota1Anterior)} → $0`);
+            console.log(`   Cuota 2: ${formatearMoneda(cuota2Anterior)} → $0`);
+            console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
+            console.log(`   Nuevo pendiente: ${formatearMoneda(trivinoIgnacio.pendiente)}`);
+            
+            ajustesRealizados++;
+        }
+    }
+    
+    // 2. SEGURA MANCILLA JULIETA - Verificar primera cuota $74,000
+    const seguraJulieta = datosAlumnos.find(a => 
+        a.nombre.includes('SEGURA MANCILLA JULIETA') || 
+        a.rut === '24.816.254-6'
+    );
+    
+    if (seguraJulieta) {
+        console.log(`🔧 Verificando SEGURA MANCILLA JULIETA - RUT: ${seguraJulieta.rut}`);
+        
+        if (seguraJulieta.cuotas && seguraJulieta.cuotas.length >= 1) {
+            const cuota1Actual = seguraJulieta.cuotas[0].monto;
+            console.log(`   Cuota 1 actual: ${formatearMoneda(cuota1Actual)}`);
+            
+            if (cuota1Actual !== 74000) {
+                console.log(`   ⚠️ CORRIGIENDO: Cuota 1 debe ser $74,000`);
+                seguraJulieta.cuotas[0].monto = 74000;
+                
+                // Recalcular si estaba pagada
+                if (seguraJulieta.cuotas[0].pagada) {
+                    let nuevoTotalPagado = 0;
+                    seguraJulieta.cuotas.forEach(cuota => {
+                        if (cuota.pagada) {
+                            nuevoTotalPagado += cuota.monto;
+                        }
+                    });
+                    
+                    seguraJulieta.totalPagadoReal = nuevoTotalPagado;
+                    seguraJulieta.totalPagado = nuevoTotalPagado;
+                    seguraJulieta.pendiente = Math.max(0, seguraJulieta.montoNeto - nuevoTotalPagado);
+                    seguraJulieta.estado = determinarEstado(seguraJulieta);
+                    
+                    console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
+                }
+                
+                ajustesRealizados++;
+            } else {
+                console.log(`   ✅ Cuota 1 ya está correcta: ${formatearMoneda(74000)}`);
+            }
+        }
+    }
+    
+    if (ajustesRealizados > 0) {
+        // Actualizar interfaz
+        aplicarFiltros();
+        actualizarEstadisticas();
+        guardarDatosEnStorage();
+        
+        console.log(`✅ Ajustes completados: ${ajustesRealizados} alumnos modificados`);
+        
+        alert(`✅ Ajustes específicos aplicados!
+
+📋 Cambios realizados:
+• TRIVIÑO OJEDA IGNACIO: Cuotas 1 y 2 → $0
+• SEGURA MANCILLA JULIETA: Verificada cuota 1 = $74,000
+
+Total alumnos ajustados: ${ajustesRealizados}`);
+    } else {
+        console.log('ℹ️ No se encontraron ajustes necesarios');
+        alert('ℹ️ Los valores ya están correctos o no se encontraron los alumnos especificados');
+    }
+}
+
 // === FUNCIONES PARA EDITAR DATOS DE APODERADO Y CORREO ===
 
 function guardarApoderado(rutAlumno) {
