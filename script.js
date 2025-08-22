@@ -5851,9 +5851,22 @@ function registrarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
 }
 
 function envioMasivoMorosos() {
-    const alumnosMorosos = datosAlumnos.filter(alumno => 
-        alumno.estado === 'moroso' || alumno.estado === 'ingreso-tardio'
-    );
+    // Filtrar solo alumnos que realmente necesitan correo de morosidad
+    const alumnosMorosos = datosAlumnos.filter(alumno => {
+        if (alumno.estado !== 'moroso' && alumno.estado !== 'ingreso-tardio') {
+            return false;
+        }
+        
+        // Verificar si pagó la cuota actual (misma lógica que generarMensajeMorosidad)
+        const fechaActual = new Date();
+        const mesActual = fechaActual.getMonth() + 1;
+        const cuotaActualEsperada = Math.max(1, mesActual - 2);
+        const cuotaMesActual = alumno.cuotas && alumno.cuotas[cuotaActualEsperada - 1];
+        const pagoCuotaActual = cuotaMesActual && cuotaMesActual.pagada;
+        
+        // Solo incluir si NO pagó la cuota actual
+        return !pagoCuotaActual;
+    });
     
     if (alumnosMorosos.length === 0) {
         alert('No hay alumnos con deudas pendientes');
