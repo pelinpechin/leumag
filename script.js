@@ -49,6 +49,18 @@ function inicializarSistema() {
         console.log('📄 Cargando desde CSV...');
         cargarArchivoAutomatico();
     }
+    
+    // Debug: mostrar datos después de la carga
+    setTimeout(() => {
+        console.log('🎯 DATOS FINALES CARGADOS:');
+        console.log(`👥 Total alumnos: ${datosAlumnos.length}`);
+        if (datosAlumnos.length > 0) {
+            console.log('📋 Primeros 3 alumnos:');
+            datosAlumnos.slice(0, 3).forEach((alumno, i) => {
+                console.log(`${i+1}. ${alumno.nombre} - RUT: ${alumno.rut}`);
+            });
+        }
+    }, 2000);
 }
 
 function configurarEventos() {
@@ -3324,8 +3336,22 @@ function verificarAlumnoExistente() {
     
     // Buscar alumno existente en los datos
     const rutLimpio = rutInput.value.replace(/[.-\s]/g, '');
-    const alumnoExistente = datosAlumnos.find(alumno => 
-        alumno.rut.replace(/[.-\s]/g, '') === rutLimpio);
+    
+    console.log(`🔍 Buscando alumno con RUT: ${rutInput.value}`);
+    console.log(`📝 RUT limpio: ${rutLimpio}`);
+    console.log(`👥 Total alumnos cargados: ${datosAlumnos.length}`);
+    console.log(`🔢 Primeros 5 RUTs en sistema:`, datosAlumnos.slice(0, 5).map(a => ({
+        nombre: a.nombre,
+        rutOriginal: a.rut,
+        rutLimpio: a.rut.replace(/[.-\s]/g, '')
+    })));
+    
+    const alumnoExistente = datosAlumnos.find(alumno => {
+        const rutAlumnoLimpio = alumno.rut.replace(/[.-\s]/g, '');
+        return rutAlumnoLimpio === rutLimpio;
+    });
+    
+    console.log(`🎯 Alumno encontrado:`, alumnoExistente ? alumnoExistente.nombre : 'No encontrado');
     
     if (alumnoExistente) {
         // Auto-completar INMEDIATAMENTE el nombre
