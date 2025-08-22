@@ -100,18 +100,24 @@ async function cargarArchivoAutomatico() {
     try {
         console.log('🔄 Intentando cargar archivo CSV automáticamente...');
         const response = await fetch('alumnos_final.csv');
+        console.log('📡 Respuesta fetch:', response.status, response.statusText);
+        
         if (response.ok) {
             console.log('✅ Archivo CSV encontrado, procesando...');
             const texto = await response.text();
+            console.log(`📄 Tamaño del archivo CSV: ${texto.length} caracteres`);
+            console.log(`🔤 Primeros 200 caracteres:`, texto.substring(0, 200));
+            
             procesarCSV(texto);
             
             // Cargar también el archivo de correos
             await cargarArchivosCorreos();
         } else {
-            console.log('❌ Archivo CSV no disponible, respuesta:', response.status);
+            console.log('❌ Archivo CSV no disponible, respuesta:', response.status, response.statusText);
         }
     } catch (error) {
         console.log('❌ Error al cargar archivo CSV automáticamente:', error);
+        console.log('🔧 Detalles del error:', error.message, error.stack);
     }
 }
 
@@ -184,11 +190,17 @@ function manejarArchivo(evento) {
 
 function procesarCSV(textoCSV) {
     console.log('📄 Procesando archivo CSV...');
+    console.log(`📊 Longitud del texto CSV: ${textoCSV.length}`);
+    
     const lineas = textoCSV.split('\n');
+    console.log(`📝 Total de líneas: ${lineas.length}`);
+    console.log(`🔤 Primera línea (encabezados): "${lineas[0]}"`);
+    
     const encabezados = lineas[0].split(';').map(h => h.trim());
     console.log('📋 Encabezados encontrados:', encabezados);
     
     datosAlumnos = [];
+    let procesados = 0;
     
     for (let i = 1; i < lineas.length; i++) {
         if (lineas[i].trim() === '') continue;
@@ -369,7 +381,20 @@ function procesarCSV(textoCSV) {
         alumno.estado = determinarEstado(alumno);
         
         datosAlumnos.push(alumno);
+        procesados++;
+        
+        // Log los primeros 3 alumnos para debug
+        if (procesados <= 3) {
+            console.log(`👤 Alumno ${procesados}:`, {
+                nombre: alumno.nombre,
+                rut: alumno.rut,
+                curso: alumno.curso
+            });
+        }
     }
+    
+    console.log(`📊 Total procesados: ${procesados}`);
+    console.log(`📊 Total en datosAlumnos: ${datosAlumnos.length}`);
     
     // Actualizar interfaz
     console.log('🔄 Actualizando interfaz...');
