@@ -5324,6 +5324,98 @@ async function verificarTotalesDirectamente() {
     }
 }
 
+// Función para descargar la base de datos actual
+function descargarBaseDeDatos() {
+    try {
+        // Preparar datos para exportación
+        const datosParaExportar = datosAlumnos.map(alumno => {
+            return {
+                nombre: alumno.nombre,
+                rut: alumno.rut,
+                curso: alumno.curso,
+                arancel: alumno.arancel,
+                beca: alumno.beca,
+                montoNeto: alumno.montoNeto,
+                totalPagadoSistema: alumno.totalPagadoReal || alumno.totalPagado || 0,
+                totalPagadoCSV: alumno.totalPagadoCSV || 0,
+                diferencia: (alumno.totalPagadoReal || alumno.totalPagado || 0) - (alumno.totalPagadoCSV || 0),
+                pendiente: alumno.pendiente,
+                estado: alumno.estado,
+                numeroCuotas: alumno.numeroCuotas,
+                valorCuotaRegular: alumno.valorCuotaRegular,
+                // Agregar información de cuotas individuales
+                cuota1: alumno.cuotas && alumno.cuotas[0] ? (alumno.cuotas[0].pagada ? alumno.cuotas[0].monto : 0) : 0,
+                cuota2: alumno.cuotas && alumno.cuotas[1] ? (alumno.cuotas[1].pagada ? alumno.cuotas[1].monto : 0) : 0,
+                cuota3: alumno.cuotas && alumno.cuotas[2] ? (alumno.cuotas[2].pagada ? alumno.cuotas[2].monto : 0) : 0,
+                cuota4: alumno.cuotas && alumno.cuotas[3] ? (alumno.cuotas[3].pagada ? alumno.cuotas[3].monto : 0) : 0,
+                cuota5: alumno.cuotas && alumno.cuotas[4] ? (alumno.cuotas[4].pagada ? alumno.cuotas[4].monto : 0) : 0,
+                cuota6: alumno.cuotas && alumno.cuotas[5] ? (alumno.cuotas[5].pagada ? alumno.cuotas[5].monto : 0) : 0,
+                cuota7: alumno.cuotas && alumno.cuotas[6] ? (alumno.cuotas[6].pagada ? alumno.cuotas[6].monto : 0) : 0,
+                cuota8: alumno.cuotas && alumno.cuotas[7] ? (alumno.cuotas[7].pagada ? alumno.cuotas[7].monto : 0) : 0,
+                cuota9: alumno.cuotas && alumno.cuotas[8] ? (alumno.cuotas[8].pagada ? alumno.cuotas[8].monto : 0) : 0,
+                cuota10: alumno.cuotas && alumno.cuotas[9] ? (alumno.cuotas[9].pagada ? alumno.cuotas[9].monto : 0) : 0
+            };
+        });
+
+        // Crear encabezados CSV
+        const encabezados = [
+            'nombre', 'rut', 'curso', 'arancel', 'beca', 'montoNeto', 
+            'totalPagadoSistema', 'totalPagadoCSV', 'diferencia', 'pendiente', 'estado',
+            'numeroCuotas', 'valorCuotaRegular',
+            'cuota1', 'cuota2', 'cuota3', 'cuota4', 'cuota5', 
+            'cuota6', 'cuota7', 'cuota8', 'cuota9', 'cuota10'
+        ];
+
+        // Convertir a CSV
+        let csvContent = encabezados.join(';') + '\n';
+        
+        datosParaExportar.forEach(alumno => {
+            const fila = encabezados.map(header => {
+                let valor = alumno[header] || 0;
+                // Formatear números como texto para Excel
+                if (typeof valor === 'number' && valor !== 0) {
+                    valor = valor.toString();
+                }
+                return valor;
+            }).join(';');
+            csvContent += fila + '\n';
+        });
+
+        // Agregar fila de totales
+        const totalSistema = datosParaExportar.reduce((sum, a) => sum + a.totalPagadoSistema, 0);
+        const totalCSV = datosParaExportar.reduce((sum, a) => sum + a.totalPagadoCSV, 0);
+        const totalDiferencia = totalSistema - totalCSV;
+        
+        csvContent += `TOTALES;;;;;;;;${totalSistema};${totalCSV};${totalDiferencia};;;;;;;;;;;;;\n`;
+
+        // Crear y descargar archivo
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `base_datos_sistema_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        
+        console.log('📁 Base de datos descargada exitosamente');
+        console.log(`📊 Total Sistema: ${formatearMoneda(totalSistema)}`);
+        console.log(`📊 Total CSV: ${formatearMoneda(totalCSV)}`);
+        console.log(`📊 Diferencia: ${formatearMoneda(Math.abs(totalDiferencia))}`);
+        
+        alert(`✅ Base de datos descargada!
+        
+📊 Estadísticas:
+• Alumnos exportados: ${datosParaExportar.length}
+• Total Sistema: ${formatearMoneda(totalSistema)}
+• Total CSV: ${formatearMoneda(totalCSV)}
+• Diferencia: ${formatearMoneda(Math.abs(totalDiferencia))}
+
+El archivo incluye una columna "diferencia" que muestra las discrepancias por alumno.`);
+        
+    } catch (error) {
+        console.error('❌ Error al descargar base de datos:', error);
+        alert('Error al generar el archivo de descarga');
+    }
+}
+
 // === FUNCIONES PARA EDITAR DATOS DE APODERADO Y CORREO ===
 
 function guardarApoderado(rutAlumno) {
