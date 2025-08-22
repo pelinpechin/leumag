@@ -5079,67 +5079,85 @@ function enviarCorreoInformativo(rutAlumno) {
     mostrarVistaPrevia('informativo', alumno, datosCorreo, mensaje);
 }
 
+function limpiarTextoEmail(texto) {
+    // Reemplazar caracteres problemáticos que pueden causar signos de interrogación
+    return texto
+        .replace(/á/g, 'a').replace(/Á/g, 'A')
+        .replace(/é/g, 'e').replace(/É/g, 'E')
+        .replace(/í/g, 'i').replace(/Í/g, 'I')
+        .replace(/ó/g, 'o').replace(/Ó/g, 'O')
+        .replace(/ú/g, 'u').replace(/Ú/g, 'U')
+        .replace(/ñ/g, 'n').replace(/Ñ/g, 'N')
+        .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+        .replace(/[^\x00-\x7F]/g, ""); // Quitar cualquier caracter no ASCII
+}
+
 function generarMensajeMorosidad(alumno, datosCorreo) {
-    const cuotasAtrasadas = alumno.cuotas.filter(c => !c.pagada && c.numero <= alumno.numeroCuotas);
+    // Filtrar solo cuotas VENCIDAS (las que aparecen en rojo), no todas las pendientes
+    const cuotasVencidas = alumno.cuotas.filter(c => !c.pagada && esCuotaVencida(c.numero));
     const fechaActual = new Date().toLocaleDateString('es-CL');
     
-    return `
+    const mensaje = `
 Estimado/a ${datosCorreo.apoderado},
 
 Junto con saludar, nos dirigimos a usted para informarle sobre el estado de pagos del estudiante ${alumno.nombre}, RUT ${formatearRUT(alumno.rut)}.
 
-📋 DETALLE DE LA DEUDA:
+DETALLE DE LA DEUDA:
 • Total pendiente: ${formatearMoneda(alumno.pendiente)}
-• Cuotas atrasadas: ${cuotasAtrasadas.length}
+• Cuotas vencidas: ${cuotasVencidas.length}
 • Estado: ${alumno.estado.toUpperCase()}
 
-💰 CUOTAS PENDIENTES:
-${cuotasAtrasadas.map(cuota => 
+CUOTAS VENCIDAS:
+${cuotasVencidas.map(cuota => 
     `• Cuota ${cuota.numero}: ${formatearMoneda(cuota.monto)} (${obtenerMesVencimiento(cuota.numero)})`
 ).join('\n')}
 
-⚠️ IMPORTANTE:
-Le solicitamos regularizar esta situación a la brevedad posible para evitar inconvenientes académicos.
+IMPORTANTE:
+Le solicitamos regularizar esta situacion a la brevedad posible para evitar inconvenientes academicos.
 
 Para realizar el pago puede:
-• Dirigirse a administración del establecimiento
-• Realizar el pago online a través de nuestro sistema
+• Dirigirse a administracion del establecimiento
+• Realizar el pago online a traves de nuestro sistema
 
 Fecha de este aviso: ${fechaActual}
 
 Saludos cordiales,
-Administración - Sistema de Tesorería
+Administracion - Sistema de Tesoreria
     `.trim();
+    
+    return limpiarTextoEmail(mensaje);
 }
 
 function generarMensajeInformativo(alumno, datosCorreo) {
     const fechaActual = new Date().toLocaleDateString('es-CL');
     const cuotasPagadas = alumno.cuotas.filter(c => c.pagada).length;
     
-    return `
+    const mensaje = `
 Estimado/a ${datosCorreo.apoderado},
 
 Nos complace informarle sobre el estado de pagos del estudiante ${alumno.nombre}, RUT ${formatearRUT(alumno.rut)}.
 
-📊 RESUMEN DE PAGOS:
+RESUMEN DE PAGOS:
 • Total pagado: ${formatearMoneda(alumno.totalPagadoReal || alumno.totalPagado)}
 • Cuotas pagadas: ${cuotasPagadas} de ${alumno.numeroCuotas}
 • Saldo pendiente: ${formatearMoneda(alumno.pendiente)}
 • Estado: ${alumno.estado.toUpperCase()}
 
-💰 ESTADO DE CUOTAS:
+ESTADO DE CUOTAS:
 ${alumno.cuotas.slice(0, alumno.numeroCuotas).map(cuota => {
-    const estado = cuota.pagada ? '✅ PAGADA' : '⏳ PENDIENTE';
+    const estado = cuota.pagada ? 'PAGADA' : 'PENDIENTE';
     return `• Cuota ${cuota.numero} (${obtenerMesVencimiento(cuota.numero)}): ${estado}`;
 }).join('\n')}
 
-Agradecemos la confianza depositada en nuestra institución.
+Agradecemos la confianza depositada en nuestra institucion.
 
 Fecha de este informe: ${fechaActual}
 
 Saludos cordiales,
-Administración - Sistema de Tesorería
+Administracion - Sistema de Tesoreria
     `.trim();
+    
+    return limpiarTextoEmail(mensaje);
 }
 
 function mostrarVistaPrevia(tipoCorreo, alumno, datosCorreo, mensaje) {
