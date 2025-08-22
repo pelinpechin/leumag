@@ -885,7 +885,7 @@ function mostrarDetalle(rut) {
     }
     
     // Agregar sección de correo si el alumno tiene morosidad o deuda pendiente
-    const tieneDeuda = alumno.estado === 'moroso' || alumno.pendiente > 0;
+    const tieneDeuda = alumno.estado === 'moroso' || alumno.estado === 'pendiente' || alumno.estado === 'ingreso-tardio';
     const datosCorreo = datosCorreos.get(alumno.rut);
     
     if (tieneDeuda || datosCorreo) {
@@ -5818,7 +5818,7 @@ function registrarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
 
 function envioMasivoMorosos() {
     const alumnosMorosos = datosAlumnos.filter(alumno => 
-        alumno.estado === 'moroso' || alumno.pendiente > 0
+        alumno.estado === 'moroso' || alumno.estado === 'pendiente' || alumno.estado === 'ingreso-tardio'
     );
     
     if (alumnosMorosos.length === 0) {
