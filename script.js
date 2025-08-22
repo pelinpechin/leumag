@@ -542,6 +542,31 @@ function determinarEstado(alumno) {
     // Si ya pagó todo lo que debe, está al día
     if (alumno.pendiente <= 0) return 'al-dia';
     
+    // NUEVA LÓGICA: Verificar si está al día con las cuotas del período actual
+    if (alumno.cuotas && alumno.cuotas.length > 0) {
+        const fechaActual = new Date();
+        const mesActual = fechaActual.getMonth() + 1; // 0-11 -> 1-12
+        
+        // Determinar hasta qué cuota debería haber pagado (agosto = cuota 6)
+        const cuotaActualEsperada = Math.max(1, mesActual - 2); // Marzo=1, Abril=2, ..., Agosto=6
+        
+        // Verificar si tiene todas las cuotas pagadas hasta el mes actual
+        const cuotasHastaMesActual = alumno.cuotas.slice(0, cuotaActualEsperada);
+        const cuotasPendientesDelPeriodo = cuotasHastaMesActual.filter(cuota => !cuota.pagada);
+        
+        // Si no tiene cuotas vencidas del período actual, está al día
+        if (cuotasPendientesDelPeriodo.length === 0) {
+            return 'al-dia';
+        }
+        
+        // Si tiene cuotas vencidas, verificar si son realmente vencidas por fecha
+        const cuotasRealmenteVencidas = cuotasPendientesDelPeriodo.filter(cuota => esCuotaVencida(cuota.numero));
+        
+        if (cuotasRealmenteVencidas.length === 0) {
+            return 'al-dia'; // No tiene cuotas vencidas por fecha
+        }
+    }
+    
     // Detectar posible ingreso tardío
     const esPosibleIngresoTardio = detectarIngresoTardio(alumno);
     
