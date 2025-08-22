@@ -579,14 +579,16 @@ function aplicarFiltros() {
     const filtroEstado = document.getElementById('filtroEstado').value;
     
     datosFiltrados = datosAlumnos.filter(alumno => {
-        // FILTRO AUTOMÁTICO: Solo mostrar alumnos del año escolar 2025
-        const esAñoActual = !alumno.añoEscolar || alumno.añoEscolar === AÑO_ESCOLAR_ACTUAL;
+        // FILTRO AUTOMÁTICO: Mostrar alumnos de 2025 y nuevos matriculados de 2026
+        const esAñoValido = !alumno.añoEscolar || 
+                           alumno.añoEscolar === AÑO_ESCOLAR_ACTUAL || 
+                           alumno.año === 2026; // Incluir matriculados para 2026
         
         const coincideNombre = alumno.nombre.toLowerCase().includes(filtroNombre);
         const coincideCurso = !filtroCurso || alumno.curso === filtroCurso;
         const coincideEstado = !filtroEstado || alumno.estado === filtroEstado;
         
-        return esAñoActual && coincideNombre && coincideCurso && coincideEstado;
+        return esAñoValido && coincideNombre && coincideCurso && coincideEstado;
     });
     
     mostrarAlumnos();
@@ -4529,6 +4531,7 @@ function prepararDatosMatricula() {
         nombre: alumno.nombreCompleto,
         rut: alumno.rut,
         curso: alumno.curso,
+        año: costos.año || 2026, // Agregar año de la matrícula
         arancel: costos.mensualidad * costos.cuotas, // Total anual
         beca: 0, // Sin beca inicial
         cuotas: generarCuotasIniciales(costos),
