@@ -519,11 +519,14 @@ function aplicarFiltros() {
     const filtroEstado = document.getElementById('filtroEstado').value;
     
     datosFiltrados = datosAlumnos.filter(alumno => {
+        // FILTRO AUTOMÁTICO: Solo mostrar alumnos del año escolar 2025
+        const esAñoActual = !alumno.añoEscolar || alumno.añoEscolar === AÑO_ESCOLAR_ACTUAL;
+        
         const coincideNombre = alumno.nombre.toLowerCase().includes(filtroNombre);
         const coincideCurso = !filtroCurso || alumno.curso === filtroCurso;
         const coincideEstado = !filtroEstado || alumno.estado === filtroEstado;
         
-        return coincideNombre && coincideCurso && coincideEstado;
+        return esAñoActual && coincideNombre && coincideCurso && coincideEstado;
     });
     
     mostrarAlumnos();
@@ -2925,7 +2928,27 @@ function mostrarHistorialEliminaciones() {
 
 // === SISTEMA DE MATRÍCULA ===
 
-// Configuración de costos de matrícula
+// Configuración del año escolar actual
+const AÑO_ESCOLAR_ACTUAL = 2025;
+const AÑO_MATRICULA_SIGUIENTE = 2026;
+
+// Aranceles en UF para 2026 (valor UF pendiente hasta primer día hábil de marzo)
+const ARANCELES_UF_2026 = {
+    // Básica (1° a 8°): 28,731 UF ÷ 10 cuotas
+    BASICA: {
+        totalUF: 28.731,
+        cuotas: 10,
+        niveles: ['1 BASICO', '2 BASICO', '3 BASICO', '4 BASICO', '5 BASICO', '6 BASICO', '7 BASICO', '8 BASICO']
+    },
+    // Media + NT1/NT2: 32,717 UF ÷ 10 cuotas (4° Medio: 9 cuotas)
+    MEDIA_NT: {
+        totalUF: 32.717,
+        cuotas: 10,
+        niveles: ['1 MEDIO', '2 MEDIO', '3 MEDIO', '4 MEDIO', 'PRE KINDER', 'KINDER']
+    }
+};
+
+// Configuración de costos de matrícula para 2025 (actual)
 const COSTOS_MATRICULA = {
     'PLAYGROUP': { matricula: 0, mensualidad: 120000, cuotas: 10 },
     'PRE KINDER': { matricula: 0, mensualidad: 120000, cuotas: 10 },
@@ -2956,6 +2979,72 @@ const COSTOS_MATRICULA = {
     '4 MEDIO B': { matricula: 3500, mensualidad: 200000, cuotas: 9 },
     '4 MEDIO C': { matricula: 270000, mensualidad: 200000, cuotas: 9 }
 };
+
+// Tabla de promoción de cursos
+const PROMOCION_CURSOS = {
+    'PLAYGROUP': 'PRE KINDER',
+    'PRE KINDER': 'KINDER', 
+    'KINDER': '1 BASICO A',
+    '1 BASICO A': '2 BASICO A',
+    '1 BASICO B': '2 BASICO B',
+    '2 BASICO A': '3 BASICO A',
+    '2 BASICO B': '3 BASICO B',
+    '3 BASICO A': '4 BASICO A',
+    '3 BASICO B': '4 BASICO B',
+    '4 BASICO A': '5 BASICO A',
+    '4 BASICO B': '5 BASICO B',
+    '5 BASICO A': '6 BASICO A',
+    '5 BASICO B': '6 BASICO B',
+    '6 BASICO A': '7 BASICO A',
+    '6 BASICO B': '7 BASICO B',
+    '7 BASICO A': '8 BASICO A',
+    '7 BASICO B': '8 BASICO B',
+    '8 BASICO A': '1 MEDIO A',
+    '8 BASICO B': '1 MEDIO B',
+    '1 MEDIO A': '2 MEDIO A',
+    '1 MEDIO B': '2 MEDIO B',
+    '2 MEDIO A': '3 MEDIO A',
+    '2 MEDIO B': '3 MEDIO B',
+    '3 MEDIO A': '4 MEDIO A',
+    '3 MEDIO B': '4 MEDIO B',
+    '4 MEDIO A': 'EGRESADO',
+    '4 MEDIO B': 'EGRESADO',
+    '4 MEDIO C': 'EGRESADO'
+};
+
+function obtenerCursoSiguiente(cursoActual) {
+    return PROMOCION_CURSOS[cursoActual] || cursoActual;
+}
+
+function calcularArancelUF2026(curso) {
+    // Determinar si es Básica o Media/NT
+    const esCursoBasico = ARANCELES_UF_2026.BASICA.niveles.some(nivel => 
+        curso.includes(nivel.split(' ')[0] + ' ' + nivel.split(' ')[1])
+    );
+    
+    const esCursoMedio = ARANCELES_UF_2026.MEDIA_NT.niveles.some(nivel => 
+        curso.includes(nivel.split(' ')[0] + ' ' + nivel.split(' ')[1])
+    );
+    
+    if (esCursoBasico) {
+        return {
+            categoria: 'BASICA',
+            totalUF: ARANCELES_UF_2026.BASICA.totalUF,
+            cuotas: ARANCELES_UF_2026.BASICA.cuotas,
+            cuotaUF: ARANCELES_UF_2026.BASICA.totalUF / ARANCELES_UF_2026.BASICA.cuotas
+        };
+    } else if (esCursoMedio) {
+        const cuotas = curso.includes('4 MEDIO') ? 9 : ARANCELES_UF_2026.MEDIA_NT.cuotas;
+        return {
+            categoria: 'MEDIA_NT',
+            totalUF: ARANCELES_UF_2026.MEDIA_NT.totalUF,
+            cuotas: cuotas,
+            cuotaUF: ARANCELES_UF_2026.MEDIA_NT.totalUF / cuotas
+        };
+    }
+    
+    return null;
+}
 
 // Estado del proceso de matrícula
 let estadoMatricula = {
@@ -3039,7 +3128,14 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
                             <div class="mb-3">
                                 <label for="rutAlumno" class="form-label">RUT <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="rutAlumno" 
-                                       placeholder="12.345.678-9" required oninput="formatearRUTInput(this)">
+                                       placeholder="12.345.678-9" required oninput="formatearRUTInput(this)"
+                                       onblur="verificarAlumnoExistente()">
+                                <div id="infoAlumnoExistente" class="mt-2 d-none">
+                                    <div class="alert alert-info">
+                                        <strong>Alumno existente detectado</strong><br>
+                                        <span id="textoAlumnoExistente"></span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="row">
@@ -3199,18 +3295,99 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
     `;
 }
 
+function verificarAlumnoExistente() {
+    const rutInput = document.getElementById('rutAlumno');
+    const infoDiv = document.getElementById('infoAlumnoExistente');
+    const textoSpan = document.getElementById('textoAlumnoExistente');
+    const nombreInput = document.getElementById('nombreCompleto');
+    const cursoSelect = document.getElementById('cursoMatricula');
+    
+    if (!rutInput.value) {
+        infoDiv.classList.add('d-none');
+        return;
+    }
+    
+    // Buscar alumno existente en los datos
+    const alumnoExistente = datosAlumnos.find(alumno => 
+        alumno.rut === rutInput.value.replace(/[.-]/g, '').replace(/\D/g, ''));
+    
+    if (alumnoExistente) {
+        // Auto-completar nombre
+        nombreInput.value = alumnoExistente.nombre;
+        nombreInput.readOnly = true;
+        
+        // Calcular curso siguiente para matrícula 2026
+        const cursoSiguiente = obtenerCursoSiguiente(alumnoExistente.curso);
+        
+        if (cursoSiguiente !== 'EGRESADO') {
+            textoSpan.innerHTML = `
+                Curso actual (${AÑO_ESCOLAR_ACTUAL}): ${alumnoExistente.curso}<br>
+                <strong>Curso sugerido para matrícula ${AÑO_MATRICULA_SIGUIENTE}: ${cursoSiguiente}</strong>
+            `;
+            
+            // Pre-seleccionar curso siguiente
+            cursoSelect.value = cursoSiguiente;
+            calcularCostosMatricula();
+        } else {
+            textoSpan.innerHTML = `
+                Curso actual (${AÑO_ESCOLAR_ACTUAL}): ${alumnoExistente.curso}<br>
+                <strong class="text-success">¡Alumno egresa este año!</strong>
+            `;
+        }
+        
+        infoDiv.classList.remove('d-none');
+    } else {
+        infoDiv.classList.add('d-none');
+        nombreInput.readOnly = false;
+    }
+}
+
 function calcularCostosMatricula() {
     const curso = document.getElementById('cursoMatricula').value;
     const resumenDiv = document.getElementById('resumenCostos');
     
-    if (curso && COSTOS_MATRICULA[curso]) {
-        const costos = COSTOS_MATRICULA[curso];
+    // Verificar si es para matrícula 2026 (aranceles UF)
+    const añoMatricula = AÑO_MATRICULA_SIGUIENTE;
+    
+    if (curso) {
+        let costos;
+        
+        if (añoMatricula === 2026) {
+            // Calcular con aranceles UF para 2026
+            const arancelUF = calcularArancelUF2026(curso);
+            
+            if (arancelUF) {
+                costos = {
+                    matricula: 0, // Sin matrícula hasta conocer valor UF
+                    mensualidad: 'PENDIENTE_UF', // Pendiente del valor UF
+                    cuotas: arancelUF.cuotas,
+                    arancelUF: arancelUF,
+                    año: añoMatricula
+                };
+                
+                document.getElementById('costoMatricula').textContent = 'Pendiente valor UF';
+                document.getElementById('costoMensualidad').innerHTML = `
+                    <strong>${arancelUF.cuotaUF.toFixed(3)} UF por cuota</strong><br>
+                    <small class="text-muted">Total: ${arancelUF.totalUF} UF (${arancelUF.categoria})</small><br>
+                    <small class="text-warning">⏳ Valor se conoce el primer día hábil de marzo ${añoMatricula}</small>
+                `;
+                document.getElementById('numeroCuotas').textContent = arancelUF.cuotas + ' cuotas';
+            } else {
+                // Curso no encontrado en aranceles UF, usar costos tradicionales
+                costos = COSTOS_MATRICULA[curso] || { matricula: 0, mensualidad: 0, cuotas: 10 };
+                document.getElementById('costoMatricula').textContent = formatearMoneda(costos.matricula);
+                document.getElementById('costoMensualidad').textContent = formatearMoneda(costos.mensualidad);
+                document.getElementById('numeroCuotas').textContent = costos.cuotas + ' cuotas';
+            }
+        } else {
+            // Usar costos tradicionales para año actual
+            costos = COSTOS_MATRICULA[curso] || { matricula: 0, mensualidad: 0, cuotas: 10 };
+            document.getElementById('costoMatricula').textContent = formatearMoneda(costos.matricula);
+            document.getElementById('costoMensualidad').textContent = formatearMoneda(costos.mensualidad);
+            document.getElementById('numeroCuotas').textContent = costos.cuotas + ' cuotas';
+        }
+        
         estadoMatricula.costosCalculados = costos;
-        
-        document.getElementById('costoMatricula').textContent = formatearMoneda(costos.matricula);
-        document.getElementById('costoMensualidad').textContent = formatearMoneda(costos.mensualidad);
-        document.getElementById('numeroCuotas').textContent = costos.cuotas + ' cuotas';
-        
         resumenDiv.classList.remove('d-none');
     } else {
         resumenDiv.classList.add('d-none');
