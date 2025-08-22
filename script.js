@@ -565,6 +565,12 @@ function determinarEstado(alumno) {
         if (cuotasRealmenteVencidas.length === 0) {
             return 'al-dia'; // No tiene cuotas vencidas por fecha
         }
+        
+        // NUEVA LÓGICA: Si tiene cuotas vencidas del período actual, debe ser 'pendiente'
+        // independientemente de si es ingreso tardío
+        if (cuotasRealmenteVencidas.length > 0) {
+            return 'pendiente';
+        }
     }
     
     // Detectar posible ingreso tardío
