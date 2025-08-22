@@ -222,8 +222,8 @@ function procesarCSV(textoCSV) {
             arancel: parsearMoneda(valores[3]?.trim() || '0'),
             beca: parsearMoneda(valores[4]?.trim() || '0'),
             cuotas: [],
-            totalPagado: parseInt(valores[valores.length - 1]?.trim() || '0'),
-            totalPagadoCSV: parseInt(valores[valores.length - 1]?.trim() || '0') // Valor original del CSV para comparación
+            totalPagado: parsearMoneda(valores[15]?.trim() || '0'), // Columna P "total pagado"
+            totalPagadoCSV: parsearMoneda(valores[15]?.trim() || '0') // Valor original del CSV para comparación
         };
         
         // Calcular información adicional PRIMERO
