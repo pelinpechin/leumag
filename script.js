@@ -5222,7 +5222,7 @@ async function confirmarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
             : `📊 Estado de Cuenta - ${alumno.nombre}`;
         
         // Enviar correo via API
-        const emailUrl = window.location.origin.includes('localhost') ? '/api/correo/enviar' : '/.netlify/functions/correo-enviar';
+        const emailUrl = window.location.origin.includes('localhost') ? '/api/correo/enviar' : '/.netlify/functions/correo-simple';
         console.log('🔧 Enviando correo a URL:', emailUrl);
         console.log('🔧 Origen detectado:', window.location.origin);
         
