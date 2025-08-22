@@ -2948,7 +2948,8 @@ const ARANCELES_UF_2026 = {
     }
 };
 
-// Configuración de costos de matrícula para 2025 (actual)
+// Configuración de costos de matrícula para 2025 (actual)  
+// REGLA: Solo educación media paga matrícula $3,500, resto $0
 const COSTOS_MATRICULA = {
     'PLAYGROUP': { matricula: 0, mensualidad: 120000, cuotas: 10 },
     'PRE KINDER': { matricula: 0, mensualidad: 120000, cuotas: 10 },
@@ -2977,7 +2978,7 @@ const COSTOS_MATRICULA = {
     '3 MEDIO B': { matricula: 3500, mensualidad: 200000, cuotas: 10 },
     '4 MEDIO A': { matricula: 3500, mensualidad: 200000, cuotas: 9 },
     '4 MEDIO B': { matricula: 3500, mensualidad: 200000, cuotas: 9 },
-    '4 MEDIO C': { matricula: 270000, mensualidad: 200000, cuotas: 9 }
+    '4 MEDIO C': { matricula: 3500, mensualidad: 200000, cuotas: 9 } // Corregido de 270000 a 3500
 };
 
 // Tabla de promoción de cursos
@@ -3352,20 +3353,24 @@ function calcularCostosMatricula() {
     if (curso) {
         let costos;
         
+        // Determinar matrícula: solo $3,500 para educación media, resto $0
+        const esEducacionMedia = curso.includes('MEDIO');
+        const matricula = esEducacionMedia ? 3500 : 0;
+        
         if (añoMatricula === 2026) {
             // Calcular con aranceles UF para 2026
             const arancelUF = calcularArancelUF2026(curso);
             
             if (arancelUF) {
                 costos = {
-                    matricula: 0, // Sin matrícula hasta conocer valor UF
+                    matricula: matricula,
                     mensualidad: 'PENDIENTE_UF', // Pendiente del valor UF
                     cuotas: arancelUF.cuotas,
                     arancelUF: arancelUF,
                     año: añoMatricula
                 };
                 
-                document.getElementById('costoMatricula').textContent = 'Pendiente valor UF';
+                document.getElementById('costoMatricula').textContent = formatearMoneda(matricula);
                 document.getElementById('costoMensualidad').innerHTML = `
                     <strong>${arancelUF.cuotaUF.toFixed(3)} UF por cuota</strong><br>
                     <small class="text-muted">Total: ${arancelUF.totalUF} UF (${arancelUF.categoria})</small><br>
@@ -3374,14 +3379,16 @@ function calcularCostosMatricula() {
                 document.getElementById('numeroCuotas').textContent = arancelUF.cuotas + ' cuotas';
             } else {
                 // Curso no encontrado en aranceles UF, usar costos tradicionales
-                costos = COSTOS_MATRICULA[curso] || { matricula: 0, mensualidad: 0, cuotas: 10 };
+                costos = COSTOS_MATRICULA[curso] || { matricula: matricula, mensualidad: 0, cuotas: 10 };
+                costos.matricula = matricula; // Asegurar matrícula correcta
                 document.getElementById('costoMatricula').textContent = formatearMoneda(costos.matricula);
                 document.getElementById('costoMensualidad').textContent = formatearMoneda(costos.mensualidad);
                 document.getElementById('numeroCuotas').textContent = costos.cuotas + ' cuotas';
             }
         } else {
             // Usar costos tradicionales para año actual
-            costos = COSTOS_MATRICULA[curso] || { matricula: 0, mensualidad: 0, cuotas: 10 };
+            costos = COSTOS_MATRICULA[curso] || { matricula: matricula, mensualidad: 0, cuotas: 10 };
+            costos.matricula = matricula; // Asegurar matrícula correcta
             document.getElementById('costoMatricula').textContent = formatearMoneda(costos.matricula);
             document.getElementById('costoMensualidad').textContent = formatearMoneda(costos.mensualidad);
             document.getElementById('numeroCuotas').textContent = costos.cuotas + ' cuotas';
