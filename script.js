@@ -2944,16 +2944,15 @@ const ARANCELES_UF_2026 = {
     MEDIA_NT: {
         totalUF: 32.717,
         cuotas: 10,
-        niveles: ['1 MEDIO', '2 MEDIO', '3 MEDIO', '4 MEDIO', 'PRE KINDER', 'KINDER']
+        niveles: ['1 MEDIO', '2 MEDIO', '3 MEDIO', '4 MEDIO', 'NT1', 'NT2']
     }
 };
 
 // Configuración de costos de matrícula para 2025 (actual)  
 // REGLA: Solo educación media paga matrícula $3,500, resto $0
 const COSTOS_MATRICULA = {
-    'PLAYGROUP': { matricula: 0, mensualidad: 120000, cuotas: 10 },
-    'PRE KINDER': { matricula: 0, mensualidad: 120000, cuotas: 10 },
-    'KINDER': { matricula: 0, mensualidad: 120000, cuotas: 10 },
+    'NT1': { matricula: 0, mensualidad: 120000, cuotas: 10 },
+    'NT2': { matricula: 0, mensualidad: 120000, cuotas: 10 },
     '1 BASICO A': { matricula: 0, mensualidad: 140000, cuotas: 10 },
     '1 BASICO B': { matricula: 0, mensualidad: 140000, cuotas: 10 },
     '2 BASICO A': { matricula: 0, mensualidad: 140000, cuotas: 10 },
@@ -2983,9 +2982,8 @@ const COSTOS_MATRICULA = {
 
 // Tabla de promoción de cursos
 const PROMOCION_CURSOS = {
-    'PLAYGROUP': 'PRE KINDER',
-    'PRE KINDER': 'KINDER', 
-    'KINDER': '1 BASICO A',
+    'NT1': 'NT2',
+    'NT2': '1 BASICO A',
     '1 BASICO A': '2 BASICO A',
     '1 BASICO B': '2 BASICO B',
     '2 BASICO A': '3 BASICO A',
@@ -3178,9 +3176,8 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
                                 <select class="form-select" id="cursoMatricula" required onchange="calcularCostosMatricula()">
                                     <option value="">Seleccionar curso...</option>
                                     <optgroup label="Educación Parvularia">
-                                        <option value="PLAYGROUP">Playgroup</option>
-                                        <option value="PRE KINDER">Pre Kínder</option>
-                                        <option value="KINDER">Kínder</option>
+                                        <option value="NT1">NT1 (Nivel de Transición 1)</option>
+                                        <option value="NT2">NT2 (Nivel de Transición 2)</option>
                                     </optgroup>
                                     <optgroup label="Educación Básica">
                                         <option value="1 BASICO A">1° Básico A</option>
@@ -3302,6 +3299,7 @@ function verificarAlumnoExistente() {
     const textoSpan = document.getElementById('textoAlumnoExistente');
     const nombreInput = document.getElementById('nombreCompleto');
     const cursoSelect = document.getElementById('cursoMatricula');
+    const fechaNacInput = document.getElementById('fechaNacimiento');
     
     if (!rutInput.value) {
         infoDiv.classList.add('d-none');
@@ -3309,30 +3307,44 @@ function verificarAlumnoExistente() {
     }
     
     // Buscar alumno existente en los datos
+    const rutLimpio = rutInput.value.replace(/[.-]/g, '');
     const alumnoExistente = datosAlumnos.find(alumno => 
-        alumno.rut === rutInput.value.replace(/[.-]/g, '').replace(/\D/g, ''));
+        alumno.rut.replace(/[.-]/g, '') === rutLimpio);
     
     if (alumnoExistente) {
-        // Auto-completar nombre
+        // Auto-completar todos los datos del alumno
         nombreInput.value = alumnoExistente.nombre;
         nombreInput.readOnly = true;
+        
+        // Auto-completar fecha de nacimiento si existe
+        if (alumnoExistente.fechaNacimiento) {
+            fechaNacInput.value = alumnoExistente.fechaNacimiento;
+        }
         
         // Calcular curso siguiente para matrícula 2026
         const cursoSiguiente = obtenerCursoSiguiente(alumnoExistente.curso);
         
         if (cursoSiguiente !== 'EGRESADO') {
             textoSpan.innerHTML = `
+                <strong>✅ Alumno encontrado - Datos auto-completados</strong><br>
                 Curso actual (${AÑO_ESCOLAR_ACTUAL}): ${alumnoExistente.curso}<br>
-                <strong>Curso sugerido para matrícula ${AÑO_MATRICULA_SIGUIENTE}: ${cursoSiguiente}</strong>
+                <strong class="text-primary">Curso para matrícula ${AÑO_MATRICULA_SIGUIENTE}: ${cursoSiguiente}</strong><br>
+                <small class="text-muted">Todos los campos se han completado automáticamente</small>
             `;
             
             // Pre-seleccionar curso siguiente
             cursoSelect.value = cursoSiguiente;
             calcularCostosMatricula();
+            
+            // Guardar referencia del alumno existente para usar sus datos
+            estadoMatricula.alumnoExistente = alumnoExistente;
+            
         } else {
             textoSpan.innerHTML = `
+                <strong>✅ Alumno encontrado</strong><br>
                 Curso actual (${AÑO_ESCOLAR_ACTUAL}): ${alumnoExistente.curso}<br>
-                <strong class="text-success">¡Alumno egresa este año!</strong>
+                <strong class="text-success">¡Alumno egresa este año!</strong><br>
+                <small class="text-warning">No requiere matrícula para el próximo año</small>
             `;
         }
         
@@ -3340,6 +3352,8 @@ function verificarAlumnoExistente() {
     } else {
         infoDiv.classList.add('d-none');
         nombreInput.readOnly = false;
+        fechaNacInput.value = '';
+        estadoMatricula.alumnoExistente = null;
     }
 }
 
@@ -3399,6 +3413,37 @@ function calcularCostosMatricula() {
     } else {
         resumenDiv.classList.add('d-none');
     }
+}
+
+function validarRUT(rut) {
+    if (!rut) return false;
+    
+    // Limpiar el RUT (quitar puntos y guión)
+    const rutLimpio = rut.replace(/[.-]/g, '');
+    
+    // Validar formato básico (debe tener entre 7 y 8 dígitos + dígito verificador)
+    if (rutLimpio.length < 8 || rutLimpio.length > 9) return false;
+    
+    // Separar número y dígito verificador
+    const numero = rutLimpio.slice(0, -1);
+    const dv = rutLimpio.slice(-1).toUpperCase();
+    
+    // Validar que el número contenga solo dígitos
+    if (!/^\d+$/.test(numero)) return false;
+    
+    // Calcular dígito verificador
+    let suma = 0;
+    let multiplicador = 2;
+    
+    for (let i = numero.length - 1; i >= 0; i--) {
+        suma += parseInt(numero[i]) * multiplicador;
+        multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+    }
+    
+    const resto = suma % 11;
+    const dvCalculado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+    
+    return dv === dvCalculado;
 }
 
 function validarYContinuar(pasoActual) {
