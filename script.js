@@ -5263,17 +5263,36 @@ async function verificarTotalesDirectamente() {
         
         let totalCSVDirecto = 0;
         let alumnosCSV = 0;
+        let diferenciasEncontradas = [];
         
         for (let i = 1; i < lineas.length; i++) {
             if (lineas[i].trim() === '') continue;
             const valores = lineas[i].split(';');
             const nombre = valores[0]?.trim() || '';
+            const rut = valores[1]?.trim() || '';
             
             if (nombre.toLowerCase() === 'totales') continue;
             
-            const totalPagado = parsearMoneda(valores[15]?.trim() || '0');
-            totalCSVDirecto += totalPagado;
+            const totalPagadoCSV = parsearMoneda(valores[15]?.trim() || '0');
+            totalCSVDirecto += totalPagadoCSV;
             alumnosCSV++;
+            
+            // Buscar el alumno en el sistema
+            const alumnoSistema = datosAlumnos.find(a => a.rut === rut);
+            if (alumnoSistema) {
+                const totalSistema = alumnoSistema.totalPagadoReal || alumnoSistema.totalPagado || 0;
+                const diferencia = totalSistema - totalPagadoCSV;
+                
+                if (Math.abs(diferencia) > 0) {
+                    diferenciasEncontradas.push({
+                        nombre: nombre,
+                        rut: rut,
+                        sistema: totalSistema,
+                        csv: totalPagadoCSV,
+                        diferencia: diferencia
+                    });
+                }
+            }
         }
         
         console.log('🔍 VERIFICACIÓN DIRECTA CSV:');
@@ -5281,8 +5300,23 @@ async function verificarTotalesDirectamente() {
         console.log(`   Alumnos en CSV: ${alumnosCSV}`);
         console.log(`   Alumnos en sistema: ${datosAlumnos.length}`);
         
-        if (alumnosCSV !== datosAlumnos.length) {
-            console.log(`   ⚠️ DIFERENCIA EN CANTIDAD: ${alumnosCSV - datosAlumnos.length} alumnos`);
+        if (diferenciasEncontradas.length > 0) {
+            console.log(`   ⚠️ DISCREPANCIAS INDIVIDUALES: ${diferenciasEncontradas.length} alumnos`);
+            
+            // Mostrar las primeras 10 discrepancias
+            const totalDiferencia = diferenciasEncontradas.reduce((sum, d) => sum + d.diferencia, 0);
+            console.log(`   📊 Suma de diferencias: ${formatearMoneda(Math.abs(totalDiferencia))} (${totalDiferencia})`);
+            
+            console.log('   📋 Primeras discrepancias:');
+            diferenciasEncontradas.slice(0, 10).forEach(d => {
+                console.log(`     ${d.nombre}: Sistema=${formatearMoneda(d.sistema)} CSV=${formatearMoneda(d.csv)} Dif=${formatearMoneda(d.diferencia)}`);
+            });
+            
+            if (diferenciasEncontradas.length > 10) {
+                console.log(`     ... y ${diferenciasEncontradas.length - 10} más`);
+            }
+        } else {
+            console.log(`   ✅ No hay discrepancias individuales`);
         }
         
     } catch (error) {
