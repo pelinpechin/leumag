@@ -5470,43 +5470,58 @@ function aplicarAjustesEspecificos() {
         }
     }
     
-    // 2. SEGURA MANCILLA JULIETA - Verificar primera cuota $74,000
+    // 2. SEGURA MANCILLA JULIETA - Primera cuota $74,000 PAGADA
     const seguraJulieta = datosAlumnos.find(a => 
         a.nombre.includes('SEGURA MANCILLA JULIETA') || 
         a.rut === '24.816.254-6'
     );
     
     if (seguraJulieta) {
-        console.log(`🔧 Verificando SEGURA MANCILLA JULIETA - RUT: ${seguraJulieta.rut}`);
+        console.log(`🔧 Ajustando SEGURA MANCILLA JULIETA - RUT: ${seguraJulieta.rut}`);
         
         if (seguraJulieta.cuotas && seguraJulieta.cuotas.length >= 1) {
             const cuota1Actual = seguraJulieta.cuotas[0].monto;
-            console.log(`   Cuota 1 actual: ${formatearMoneda(cuota1Actual)}`);
+            const cuota1PagadaActual = seguraJulieta.cuotas[0].pagada;
             
+            console.log(`   Cuota 1 actual: ${formatearMoneda(cuota1Actual)} - Pagada: ${cuota1PagadaActual}`);
+            
+            let cambiosRealizados = false;
+            
+            // Corregir monto si es necesario
             if (cuota1Actual !== 74000) {
-                console.log(`   ⚠️ CORRIGIENDO: Cuota 1 debe ser $74,000`);
+                console.log(`   🔧 Corrigiendo monto: ${formatearMoneda(cuota1Actual)} → ${formatearMoneda(74000)}`);
                 seguraJulieta.cuotas[0].monto = 74000;
+                cambiosRealizados = true;
+            }
+            
+            // Marcar como PAGADA (ya había pagado)
+            if (!cuota1PagadaActual) {
+                console.log(`   ✅ Marcando cuota 1 como PAGADA (ya había pagado)`);
+                seguraJulieta.cuotas[0].pagada = true;
+                cambiosRealizados = true;
+            }
+            
+            if (cambiosRealizados) {
+                // Recalcular totales
+                let nuevoTotalPagado = 0;
+                seguraJulieta.cuotas.forEach(cuota => {
+                    if (cuota.pagada) {
+                        nuevoTotalPagado += cuota.monto;
+                    }
+                });
                 
-                // Recalcular si estaba pagada
-                if (seguraJulieta.cuotas[0].pagada) {
-                    let nuevoTotalPagado = 0;
-                    seguraJulieta.cuotas.forEach(cuota => {
-                        if (cuota.pagada) {
-                            nuevoTotalPagado += cuota.monto;
-                        }
-                    });
-                    
-                    seguraJulieta.totalPagadoReal = nuevoTotalPagado;
-                    seguraJulieta.totalPagado = nuevoTotalPagado;
-                    seguraJulieta.pendiente = Math.max(0, seguraJulieta.montoNeto - nuevoTotalPagado);
-                    seguraJulieta.estado = determinarEstado(seguraJulieta);
-                    
-                    console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
-                }
+                seguraJulieta.totalPagadoReal = nuevoTotalPagado;
+                seguraJulieta.totalPagado = nuevoTotalPagado;
+                seguraJulieta.pendiente = Math.max(0, seguraJulieta.montoNeto - nuevoTotalPagado);
+                seguraJulieta.estado = determinarEstado(seguraJulieta);
+                
+                console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
+                console.log(`   Nuevo pendiente: ${formatearMoneda(seguraJulieta.pendiente)}`);
+                console.log(`   Nuevo estado: ${seguraJulieta.estado}`);
                 
                 ajustesRealizados++;
             } else {
-                console.log(`   ✅ Cuota 1 ya está correcta: ${formatearMoneda(74000)}`);
+                console.log(`   ✅ Cuota 1 ya está correcta y pagada`);
             }
         }
     }
@@ -5525,7 +5540,8 @@ function aplicarAjustesEspecificos() {
 • TRIVIÑO OJEDA FRANCISCA: 
   - Arancel → $812.960
   - Cuotas 1 y 2 → $0
-• SEGURA MANCILLA JULIETA: Verificada cuota 1 = $74,000
+• SEGURA MANCILLA JULIETA: 
+  - Cuota 1 = $74,000 PAGADA (ya había pagado)
 
 Total alumnos ajustados: ${ajustesRealizados}`);
     } else {
