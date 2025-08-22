@@ -19,10 +19,10 @@ const DATOS_ESTABLECIMIENTO = {
 
 // Configuración de Webpay Plus (Transbank)
 const WEBPAY_CONFIG = {
-    // URLs del backend - ahora usando Netlify Functions
-    baseUrl: window.location.origin.includes('localhost:3002') ? 'http://localhost:3002' : window.location.origin,
-    createUrl: '/.netlify/functions/api/webpay/iniciar',
-    resultUrl: '/.netlify/functions/api/webpay/result',
+    // URLs del backend - detectar si es local o Netlify
+    baseUrl: window.location.origin.includes('localhost') ? window.location.origin : window.location.origin,
+    createUrl: window.location.origin.includes('localhost') ? '/api/webpay/create' : '/.netlify/functions/api/webpay/iniciar',
+    resultUrl: window.location.origin.includes('localhost') ? '/api/webpay/result' : '/.netlify/functions/api/webpay/result',
     ambiente: "integration", // "integration" o "production"
 };
 
@@ -5222,7 +5222,8 @@ async function confirmarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
             : `📊 Estado de Cuenta - ${alumno.nombre}`;
         
         // Enviar correo via API
-        const response = await fetch('/.netlify/functions/api/correo/enviar', {
+        const emailUrl = window.location.origin.includes('localhost') ? '/api/correo/enviar' : '/.netlify/functions/api/correo/enviar';
+        const response = await fetch(emailUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -5430,7 +5431,8 @@ async function ejecutarEnvioMasivo(rutAlumnos) {
         }
         
         // Enviar correos via API
-        const response = await fetch('/.netlify/functions/api/correo/enviar-masivo', {
+        const emailMasivoUrl = window.location.origin.includes('localhost') ? '/api/correo/enviar-masivo' : '/.netlify/functions/api/correo/enviar-masivo';
+        const response = await fetch(emailMasivoUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
