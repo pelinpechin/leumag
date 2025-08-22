@@ -3444,8 +3444,8 @@ function validarRUT(rut) {
     // Limpiar el RUT (quitar puntos, guión y espacios)
     const rutLimpio = rut.replace(/[.\-\s]/g, '').toUpperCase();
     
-    // Validar formato básico (debe tener entre 8 y 9 caracteres)
-    if (rutLimpio.length < 8 || rutLimpio.length > 9) return false;
+    // Validar formato básico (debe tener entre 7 y 9 caracteres)
+    if (rutLimpio.length < 7 || rutLimpio.length > 9) return false;
     
     // Separar número y dígito verificador
     const numero = rutLimpio.slice(0, -1);
@@ -3454,8 +3454,9 @@ function validarRUT(rut) {
     // Validar que el número contenga solo dígitos
     if (!/^\d+$/.test(numero)) return false;
     
-    // Validar que sea un número válido (no menor a 1 millón)
-    if (parseInt(numero) < 1000000) return false;
+    // Validar rango básico (entre 100.000 y 99.999.999)
+    const numeroEntero = parseInt(numero);
+    if (numeroEntero < 100000 || numeroEntero > 99999999) return false;
     
     // Calcular dígito verificador
     let suma = 0;
@@ -3468,6 +3469,17 @@ function validarRUT(rut) {
     
     const resto = suma % 11;
     const dvCalculado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+    
+    console.log(`🔍 Validando RUT ${rut}:`, {
+        rutLimpio,
+        numero,
+        dv,
+        numeroEntero,
+        suma,
+        resto,
+        dvCalculado,
+        esValido: dv === dvCalculado
+    });
     
     return dv === dvCalculado;
 }
