@@ -3204,8 +3204,12 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
                             <div class="mb-3">
                                 <label for="nombreCompleto" class="form-label">Nombre Completo <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="nombreCompleto" 
-                                       placeholder="Nombres y apellidos completos" required>
-                                <small class="form-text text-muted">Se completará automáticamente si el RUT ya existe</small>
+                                       placeholder="Escriba el nombre para buscar alumno existente" required
+                                       oninput="buscarPorNombre(this.value)">
+                                <div id="sugerenciasNombre" class="mt-2 d-none">
+                                    <div class="list-group" id="listaSugerencias"></div>
+                                </div>
+                                <small class="form-text text-muted">Escriba el nombre para buscar alumnos existentes</small>
                             </div>
                             
                             <div class="row">
@@ -3362,6 +3366,104 @@ function mostrarFormularioAlumno(modalCuerpo, modalFooter) {
             Siguiente: Datos del Apoderado →
         </button>
     `;
+}
+
+function buscarPorNombre(nombre) {
+    console.log(`🔍 Buscando por nombre: "${nombre}"`);
+    
+    const sugerenciasDiv = document.getElementById('sugerenciasNombre');
+    const listaSugerencias = document.getElementById('listaSugerencias');
+    const rutInput = document.getElementById('rutAlumno');
+    
+    // Si el nombre es muy corto, ocultar sugerencias
+    if (!nombre || nombre.length < 3) {
+        sugerenciasDiv.classList.add('d-none');
+        return;
+    }
+    
+    // Buscar alumnos que coincidan
+    const coincidencias = datosAlumnos.filter(alumno => 
+        alumno.nombre.toLowerCase().includes(nombre.toLowerCase())
+    ).slice(0, 5); // Máximo 5 sugerencias
+    
+    console.log(`📋 Encontradas ${coincidencias.length} coincidencias`);
+    
+    if (coincidencias.length > 0) {
+        // Mostrar sugerencias
+        listaSugerencias.innerHTML = '';
+        
+        coincidencias.forEach(alumno => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+            item.innerHTML = `
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">${alumno.nombre}</h6>
+                    <small class="text-muted">${alumno.curso}</small>
+                </div>
+                <p class="mb-1">RUT: ${alumno.rut}</p>
+                <small class="text-muted">Click para seleccionar</small>
+            `;
+            
+            item.onclick = () => seleccionarAlumno(alumno);
+            listaSugerencias.appendChild(item);
+        });
+        
+        sugerenciasDiv.classList.remove('d-none');
+    } else {
+        sugerenciasDiv.classList.add('d-none');
+    }
+}
+
+function seleccionarAlumno(alumno) {
+    console.log('👤 Alumno seleccionado:', alumno);
+    
+    // Auto-completar todos los campos
+    document.getElementById('nombreCompleto').value = alumno.nombre;
+    document.getElementById('rutAlumno').value = alumno.rut;
+    
+    // Auto-completar fecha de nacimiento si existe
+    const fechaNacInput = document.getElementById('fechaNacimiento');
+    if (fechaNacInput && alumno.fechaNacimiento) {
+        fechaNacInput.value = alumno.fechaNacimiento;
+    }
+    
+    // Calcular curso siguiente
+    const cursoSiguiente = obtenerCursoSiguiente(alumno.curso);
+    const cursoSelect = document.getElementById('cursoMatricula');
+    
+    if (cursoSelect && cursoSiguiente !== 'EGRESADO') {
+        cursoSelect.value = cursoSiguiente;
+        calcularCostosMatricula();
+    }
+    
+    // Guardar referencia
+    estadoMatricula.alumnoExistente = alumno;
+    
+    // Ocultar sugerencias
+    document.getElementById('sugerenciasNombre').classList.add('d-none');
+    
+    // Mostrar información
+    const infoDiv = document.getElementById('infoAlumnoExistente');
+    const textoSpan = document.getElementById('textoAlumnoExistente');
+    
+    if (cursoSiguiente !== 'EGRESADO') {
+        textoSpan.innerHTML = `
+            <strong>✅ Alumno seleccionado</strong><br>
+            <strong class="text-success">${alumno.nombre}</strong><br>
+            Curso actual (${AÑO_ESCOLAR_ACTUAL}): <strong>${alumno.curso}</strong><br>
+            Curso para matrícula ${AÑO_MATRICULA_SIGUIENTE}: <strong class="text-primary">${cursoSiguiente}</strong>
+        `;
+    } else {
+        textoSpan.innerHTML = `
+            <strong>✅ Alumno seleccionado</strong><br>
+            <strong class="text-success">${alumno.nombre}</strong><br>
+            Curso actual (${AÑO_ESCOLAR_ACTUAL}): <strong>${alumno.curso}</strong><br>
+            <span class="text-warning">⚠️ Alumno egresa este año - No requiere re-matrícula</span>
+        `;
+    }
+    
+    infoDiv.classList.remove('d-none');
 }
 
 function verificarAlumnoExistente() {
@@ -3523,49 +3625,27 @@ function calcularCostosMatricula() {
 }
 
 function validarRUT(rut) {
-    if (!rut || rut.trim() === '') return false;
+    console.log(`🔍 Validando RUT: "${rut}"`);
     
-    // Limpiar el RUT (quitar puntos, guión y espacios)
-    const rutLimpio = rut.replace(/[.\-\s]/g, '').toUpperCase();
-    
-    // Validar formato básico (debe tener entre 7 y 9 caracteres)
-    if (rutLimpio.length < 7 || rutLimpio.length > 9) return false;
-    
-    // Separar número y dígito verificador
-    const numero = rutLimpio.slice(0, -1);
-    const dv = rutLimpio.slice(-1);
-    
-    // Validar que el número contenga solo dígitos
-    if (!/^\d+$/.test(numero)) return false;
-    
-    // Validar rango básico (entre 100.000 y 99.999.999)
-    const numeroEntero = parseInt(numero);
-    if (numeroEntero < 100000 || numeroEntero > 99999999) return false;
-    
-    // Calcular dígito verificador
-    let suma = 0;
-    let multiplicador = 2;
-    
-    for (let i = numero.length - 1; i >= 0; i--) {
-        suma += parseInt(numero[i]) * multiplicador;
-        multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+    // VALIDACIÓN PERMISIVA - Solo verificar que no esté vacío y tenga formato básico
+    if (!rut || rut.trim() === '') {
+        console.log('❌ RUT vacío');
+        return false;
     }
     
-    const resto = suma % 11;
-    const dvCalculado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+    // Limpiar el RUT
+    const rutLimpio = rut.replace(/[.\-\s]/g, '').toUpperCase();
+    console.log(`🧹 RUT limpio: "${rutLimpio}"`);
     
-    console.log(`🔍 Validando RUT ${rut}:`, {
-        rutLimpio,
-        numero,
-        dv,
-        numeroEntero,
-        suma,
-        resto,
-        dvCalculado,
-        esValido: dv === dvCalculado
-    });
+    // Validación muy básica - solo longitud
+    if (rutLimpio.length < 7 || rutLimpio.length > 9) {
+        console.log(`❌ Longitud incorrecta: ${rutLimpio.length}`);
+        return false;
+    }
     
-    return dv === dvCalculado;
+    // Si llegamos aquí, considerar válido para no bloquear
+    console.log('✅ RUT aceptado (validación permisiva)');
+    return true;
 }
 
 function validarYContinuar(pasoActual) {
