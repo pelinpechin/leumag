@@ -1151,6 +1151,22 @@ function actualizarEstadisticas() {
         console.log(`   Total CSV: ${formatearMoneda(totalCSV)} (${totalCSV})`);
         console.log(`   Diferencia: ${formatearMoneda(diferenciaTotal)} (${diferenciaTotal})`);
         console.log(`   Alumnos en cálculo: ${datosParaEstadisticas.length}`);
+        
+        // Verificar algunos valores específicos
+        let diferenciasIndividuales = 0;
+        datosParaEstadisticas.forEach(a => {
+            const difIndividual = Math.abs((a.totalPagadoReal || a.totalPagado) - (a.totalPagadoCSV || 0));
+            if (difIndividual > 0) {
+                diferenciasIndividuales++;
+                if (diferenciasIndividuales <= 3) { // Mostrar solo los primeros 3
+                    console.log(`     ${a.nombre}: Sistema=${a.totalPagadoReal || a.totalPagado} CSV=${a.totalPagadoCSV || 0} Dif=${difIndividual}`);
+                }
+            }
+        });
+        
+        if (diferenciasIndividuales > 3) {
+            console.log(`     ... y ${diferenciasIndividuales - 3} diferencias más`);
+        }
     }
     
     document.getElementById('totalAlumnos').textContent = totalAlumnos.toLocaleString();
@@ -5235,6 +5251,42 @@ Esto actualizará:
 • Todos los totales ahora son consistentes`);
         
         delete window.discrepanciasCSV;
+    }
+}
+
+// Función temporal para debug de totales
+async function verificarTotalesDirectamente() {
+    try {
+        const response = await fetch('alumnos_final.csv');
+        const csvText = await response.text();
+        const lineas = csvText.split('\n');
+        
+        let totalCSVDirecto = 0;
+        let alumnosCSV = 0;
+        
+        for (let i = 1; i < lineas.length; i++) {
+            if (lineas[i].trim() === '') continue;
+            const valores = lineas[i].split(';');
+            const nombre = valores[0]?.trim() || '';
+            
+            if (nombre.toLowerCase() === 'totales') continue;
+            
+            const totalPagado = parsearMoneda(valores[15]?.trim() || '0');
+            totalCSVDirecto += totalPagado;
+            alumnosCSV++;
+        }
+        
+        console.log('🔍 VERIFICACIÓN DIRECTA CSV:');
+        console.log(`   Total CSV directo: ${formatearMoneda(totalCSVDirecto)} (${totalCSVDirecto})`);
+        console.log(`   Alumnos en CSV: ${alumnosCSV}`);
+        console.log(`   Alumnos en sistema: ${datosAlumnos.length}`);
+        
+        if (alumnosCSV !== datosAlumnos.length) {
+            console.log(`   ⚠️ DIFERENCIA EN CANTIDAD: ${alumnosCSV - datosAlumnos.length} alumnos`);
+        }
+        
+    } catch (error) {
+        console.error('Error verificando totales directamente:', error);
     }
 }
 
