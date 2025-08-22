@@ -1138,10 +1138,33 @@ function actualizarEstadisticas() {
         a.estado === 'moroso' && a.beca < a.arancel && a.montoNeto > 0
     ).length;
     
+    // NUEVA FUNCIONALIDAD: Comparar totales Sistema vs CSV
+    const totalSistema = datosParaEstadisticas.reduce((sum, a) => sum + (a.totalPagadoReal || a.totalPagado), 0);
+    const totalCSV = datosParaEstadisticas.reduce((sum, a) => sum + (a.totalPagadoCSV || 0), 0);
+    const diferenciaTotal = Math.abs(totalSistema - totalCSV);
+    const coincideTotales = diferenciaTotal < 1; // Tolerancia de $1
+    
     document.getElementById('totalAlumnos').textContent = totalAlumnos.toLocaleString();
     document.getElementById('totalRecaudado').textContent = formatearMoneda(totalRecaudado);
     document.getElementById('porRecaudar').textContent = formatearMoneda(totalPorRecaudar);
     document.getElementById('alumnosMorosos').textContent = alumnosMorosos.toLocaleString();
+    
+    // Actualizar comparación Sistema vs CSV si existe el elemento
+    const elementoComparacion = document.getElementById('comparacionTotales');
+    if (elementoComparacion) {
+        const claseEstado = coincideTotales ? 'text-success' : 'text-danger';
+        const icono = coincideTotales ? '✅' : '⚠️';
+        
+        elementoComparacion.innerHTML = `
+            <div class="d-flex justify-content-between">
+                <span>Sistema vs CSV:</span>
+                <span class="${claseEstado}">${icono} ${coincideTotales ? 'Coincide' : formatearMoneda(diferenciaTotal)}</span>
+            </div>
+            <small class="text-muted">
+                Sistema: ${formatearMoneda(totalSistema)} | CSV: ${formatearMoneda(totalCSV)}
+            </small>
+        `;
+    }
     
     // Verificar sumatorias por cuota
     verificarSumatoriasPorCuota();
