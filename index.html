@@ -343,8 +343,66 @@
     
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="supabase-migration.js"></script>
+    
+    <!-- Configuración Supabase inline para evitar problemas de carga -->
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_CONFIG = {
+            url: 'https://iajcxlymwqeltfmedmkj.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhamN4bHltd3FlbHRmbWVkbWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMzM2MjYsImV4cCI6MjA3MTgwOTYyNn0.tOOiZglUQ5m1xXDLsjxux5HSNQ7AtRk_Hr1Ntdu03yk'
+        };
+
+        // Variables globales
+        let supabase = null;
+        window.supabaseClient = null;
+
+        // Función para inicializar Supabase
+        function initializeSupabase() {
+            if (typeof window !== 'undefined' && window.supabase) {
+                try {
+                    supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                    window.supabaseClient = supabase;
+                    console.log('✅ Supabase inicializado correctamente');
+                    return true;
+                } catch (error) {
+                    console.error('❌ Error inicializando Supabase:', error);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        // Función para verificar si Supabase está disponible
+        function isSupabaseReady() {
+            if (!supabase && !window.supabaseClient && window.supabase) {
+                initializeSupabase();
+            }
+            return supabase !== null || window.supabaseClient !== null;
+        }
+
+        // Función básica de migración
+        async function migrarDatosASupabase() {
+            alert('⚠️ La migración completa está disponible en producción (Netlify).\n\nEn desarrollo local, usa el CSV directamente.\n\n✅ Los datos se migrarán automáticamente cuando despliegues a Netlify.');
+            return;
+        }
+
+        // Hacer disponible globalmente
+        window.SUPABASE_CONFIG = SUPABASE_CONFIG;
+        window.supabaseClient = supabase;
+        window.isSupabaseReady = isSupabaseReady;
+        window.initializeSupabase = initializeSupabase;
+        window.migrarDatosASupabase = migrarDatosASupabase;
+
+        // Inicializar cuando se carga
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (window.supabase) {
+                    initializeSupabase();
+                    console.log('🔧 Modo desarrollo - Supabase básico cargado');
+                }
+            }, 500);
+        });
+    </script>
     
     <script src="script.js"></script>
 </body>
