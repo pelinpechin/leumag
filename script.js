@@ -375,6 +375,62 @@ function procesarCSV(textoCSV) {
             }
         });
         
+        // === AJUSTES PERMANENTES ESPECÍFICOS ===
+        
+        // TRIVIÑO OJEDA FRANCISCA - Ajustes permanentes
+        if (alumno.nombre.includes('TRIVINO OJEDA FRANCISCA') || alumno.rut === '23.437.771-K') {
+            console.log(`🔧 Aplicando ajustes permanentes a TRIVIÑO OJEDA FRANCISCA`);
+            
+            // Corregir arancel
+            alumno.arancel = 812960;
+            alumno.montoNeto = alumno.arancel - alumno.beca;
+            
+            // Cuotas 1 y 2 en $0
+            if (alumno.cuotas.length >= 2) {
+                alumno.cuotas[0].monto = 0;
+                alumno.cuotas[0].pagada = false;
+                alumno.cuotas[1].monto = 0;
+                alumno.cuotas[1].pagada = false;
+            }
+            
+            // Redistribuir monto neto en cuotas 3 a 10 (8 cuotas)
+            if (alumno.cuotas.length >= 10) {
+                const montoPorCuota = Math.round(alumno.montoNeto / 8);
+                const restoDistribuir = alumno.montoNeto - (montoPorCuota * 8);
+                
+                for (let i = 2; i < 10; i++) { // cuotas 3-10
+                    alumno.cuotas[i].monto = montoPorCuota;
+                    if (i === 9 && restoDistribuir !== 0) {
+                        alumno.cuotas[i].monto += restoDistribuir;
+                    }
+                }
+            }
+            
+            console.log(`   ✅ Francisca - Arancel: ${formatearMoneda(alumno.arancel)}, Monto neto: ${formatearMoneda(alumno.montoNeto)}`);
+        }
+        
+        // SEGURA MANCILLA JULIETA - Ajustes permanentes
+        if (alumno.nombre.includes('SEGURA MANCILLA JULIETA') || alumno.rut === '24.816.254-6') {
+            console.log(`🔧 Aplicando ajustes permanentes a SEGURA MANCILLA JULIETA`);
+            
+            if (alumno.cuotas.length >= 1) {
+                // Corregir primera cuota y marcarla como pagada
+                alumno.cuotas[0].monto = 74000;
+                alumno.cuotas[0].pagada = true;
+                console.log(`   ✅ Julieta - Cuota 1: ${formatearMoneda(74000)} PAGADA`);
+            }
+        }
+        
+        // Recalcular totales después de ajustes permanentes
+        totalAbonado = 0;
+        alumno.cuotas.forEach(cuota => {
+            if (cuota.pagada) {
+                totalAbonado += cuota.monto;
+            } else if (cuota.abonos && cuota.abonos.length > 0) {
+                totalAbonado += cuota.abonos.reduce((sum, abono) => sum + abono.monto, 0);
+            }
+        });
+        
         // Actualizar el total pagado con los cálculos correctos
         alumno.totalPagadoReal = totalAbonado;
         alumno.pendiente = Math.max(0, alumno.montoNeto - totalAbonado);
@@ -395,6 +451,9 @@ function procesarCSV(textoCSV) {
     
     console.log(`📊 Total procesados: ${procesados}`);
     console.log(`📊 Total en datosAlumnos: ${datosAlumnos.length}`);
+    
+    // Aplicar ajustes permanentes a datos existentes si los hay
+    aplicarAjustesPermanentesExistentes();
     
     // Actualizar interfaz
     console.log('🔄 Actualizando interfaz...');
@@ -5416,13 +5475,78 @@ El archivo incluye una columna "diferencia" que muestra las discrepancias por al
     }
 }
 
+// Función para aplicar ajustes permanentes a datos existentes
+function aplicarAjustesPermanentesExistentes() {
+    console.log('🔧 Aplicando ajustes permanentes a datos existentes...');
+    
+    datosAlumnos.forEach(alumno => {
+        let ajustado = false;
+        
+        // TRIVIÑO OJEDA FRANCISCA
+        if (alumno.nombre.includes('TRIVINO OJEDA FRANCISCA') || alumno.rut === '23.437.771-K') {
+            alumno.arancel = 812960;
+            alumno.montoNeto = alumno.arancel - alumno.beca;
+            
+            if (alumno.cuotas.length >= 2) {
+                alumno.cuotas[0].monto = 0;
+                alumno.cuotas[0].pagada = false;
+                alumno.cuotas[1].monto = 0;
+                alumno.cuotas[1].pagada = false;
+            }
+            
+            if (alumno.cuotas.length >= 10) {
+                const montoPorCuota = Math.round(alumno.montoNeto / 8);
+                const restoDistribuir = alumno.montoNeto - (montoPorCuota * 8);
+                
+                for (let i = 2; i < 10; i++) {
+                    alumno.cuotas[i].monto = montoPorCuota;
+                    if (i === 9 && restoDistribuir !== 0) {
+                        alumno.cuotas[i].monto += restoDistribuir;
+                    }
+                }
+            }
+            ajustado = true;
+        }
+        
+        // SEGURA MANCILLA JULIETA
+        if (alumno.nombre.includes('SEGURA MANCILLA JULIETA') || alumno.rut === '24.816.254-6') {
+            if (alumno.cuotas.length >= 1) {
+                alumno.cuotas[0].monto = 74000;
+                alumno.cuotas[0].pagada = true;
+            }
+            ajustado = true;
+        }
+        
+        // Recalcular totales si hubo ajustes
+        if (ajustado) {
+            let totalAbonado = 0;
+            alumno.cuotas.forEach(cuota => {
+                if (cuota.pagada) {
+                    totalAbonado += cuota.monto;
+                } else if (cuota.abonos && cuota.abonos.length > 0) {
+                    totalAbonado += cuota.abonos.reduce((sum, abono) => sum + abono.monto, 0);
+                }
+            });
+            
+            alumno.totalPagadoReal = totalAbonado;
+            alumno.totalPagado = totalAbonado;
+            alumno.pendiente = Math.max(0, alumno.montoNeto - totalAbonado);
+            alumno.estado = determinarEstado(alumno);
+        }
+    });
+    
+    // Guardar datos actualizados
+    guardarDatosEnStorage();
+    console.log('✅ Ajustes permanentes aplicados a datos existentes');
+}
+
 // Función para ajustes específicos de alumnos
 function aplicarAjustesEspecificos() {
     let ajustesRealizados = 0;
     
     console.log('🔧 Aplicando ajustes específicos...');
     
-    // 1. TRIVIÑO OJEDA FRANCISCA - Cuotas 1 y 2 en $0 y arancel $812,960
+    // 1. TRIVIÑO OJEDA FRANCISCA - Arancel $812,960 y año completamente pagado
     const trivinoFrancisca = datosAlumnos.find(a => 
         a.nombre.includes('TRIVINO OJEDA FRANCISCA') || 
         a.rut === '23.437.771-K'
@@ -5431,23 +5555,46 @@ function aplicarAjustesEspecificos() {
     if (trivinoFrancisca) {
         console.log(`🔧 Ajustando TRIVIÑO OJEDA FRANCISCA - RUT: ${trivinoFrancisca.rut}`);
         
-        // Corregir arancel
+        // Corregir arancel a $812,960
         const arancelAnterior = trivinoFrancisca.arancel;
         trivinoFrancisca.arancel = 812960;
         trivinoFrancisca.montoNeto = trivinoFrancisca.arancel - trivinoFrancisca.beca;
         console.log(`   Arancel: ${formatearMoneda(arancelAnterior)} → ${formatearMoneda(812960)}`);
+        console.log(`   Nuevo monto neto: ${formatearMoneda(trivinoFrancisca.montoNeto)}`);
         
-        // Ajustar cuotas 1 y 2 a $0 (ya están en 0 según CSV, pero verificar)
-        if (trivinoFrancisca.cuotas && trivinoFrancisca.cuotas.length >= 2) {
+        // Ajustar cuotas: 1 y 2 en $0, redistribuir monto neto en cuotas 3 a 10 (8 cuotas)
+        if (trivinoFrancisca.cuotas && trivinoFrancisca.cuotas.length >= 10) {
             const cuota1Anterior = trivinoFrancisca.cuotas[0].monto;
             const cuota2Anterior = trivinoFrancisca.cuotas[1].monto;
             
+            // Cuotas 1 y 2 en $0 (no se pagan)
             trivinoFrancisca.cuotas[0].monto = 0;
             trivinoFrancisca.cuotas[0].pagada = false;
             trivinoFrancisca.cuotas[1].monto = 0;
             trivinoFrancisca.cuotas[1].pagada = false;
             
-            // Recalcular total pagado
+            // Calcular monto por cuota para distribuir el monto neto en 8 cuotas (3-10)
+            const montoPorCuota = Math.round(trivinoFrancisca.montoNeto / 8);
+            const restoDistribuir = trivinoFrancisca.montoNeto - (montoPorCuota * 8);
+            
+            console.log(`   Distribuyendo ${formatearMoneda(trivinoFrancisca.montoNeto)} en 8 cuotas (3-10)`);
+            console.log(`   Monto por cuota: ${formatearMoneda(montoPorCuota)}`);
+            
+            // Redistribuir en cuotas 3 a 10
+            for (let i = 2; i < 10; i++) { // índices 2-9 = cuotas 3-10
+                const montoAnterior = trivinoFrancisca.cuotas[i].monto;
+                trivinoFrancisca.cuotas[i].monto = montoPorCuota;
+                
+                // Agregar el resto a la última cuota para que sume exacto
+                if (i === 9 && restoDistribuir !== 0) {
+                    trivinoFrancisca.cuotas[i].monto += restoDistribuir;
+                }
+                
+                console.log(`   Cuota ${i + 1}: ${formatearMoneda(montoAnterior)} → ${formatearMoneda(trivinoFrancisca.cuotas[i].monto)}`);
+            }
+            
+            // Recalcular total pagado basado en las cuotas que realmente ha pagado
+            const totalPagadoAnterior = trivinoFrancisca.totalPagado;
             let nuevoTotalPagado = 0;
             trivinoFrancisca.cuotas.forEach(cuota => {
                 if (cuota.pagada) {
@@ -5462,9 +5609,9 @@ function aplicarAjustesEspecificos() {
             
             console.log(`   Cuota 1: ${formatearMoneda(cuota1Anterior)} → $0`);
             console.log(`   Cuota 2: ${formatearMoneda(cuota2Anterior)} → $0`);
-            console.log(`   Nuevo monto neto: ${formatearMoneda(trivinoFrancisca.montoNeto)}`);
-            console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
-            console.log(`   Nuevo pendiente: ${formatearMoneda(trivinoFrancisca.pendiente)}`);
+            console.log(`   Total pagado: ${formatearMoneda(totalPagadoAnterior)} → ${formatearMoneda(nuevoTotalPagado)}`);
+            console.log(`   Pendiente: ${formatearMoneda(trivinoFrancisca.pendiente)}`);
+            console.log(`   Estado: ${trivinoFrancisca.estado}`);
             
             ajustesRealizados++;
         }
@@ -5540,6 +5687,7 @@ function aplicarAjustesEspecificos() {
 • TRIVIÑO OJEDA FRANCISCA: 
   - Arancel → $812.960
   - Cuotas 1 y 2 → $0
+  - PAGA CUOTAS 3 A 10 (8 cuotas) 📝
 • SEGURA MANCILLA JULIETA: 
   - Cuota 1 = $74,000 PAGADA (ya había pagado)
 
@@ -6135,7 +6283,9 @@ async function confirmarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
         const resultado = await response.json();
         
         // Remover loading
-        document.body.removeChild(loadingAlert);
+        if (loadingAlert && loadingAlert.parentNode) {
+            loadingAlert.parentNode.removeChild(loadingAlert);
+        }
         
         if (resultado.success) {
             const modoTexto = resultado.simulado ? 
@@ -6159,7 +6309,9 @@ ${resultado.simulado ? 'El correo fue procesado correctamente en modo simulació
     } catch (error) {
         // Remover loading si existe
         const loadingAlert = document.querySelector('.alert.alert-info');
-        if (loadingAlert) document.body.removeChild(loadingAlert);
+        if (loadingAlert && loadingAlert.parentNode) {
+            loadingAlert.parentNode.removeChild(loadingAlert);
+        }
         
         console.error('Error enviando correo:', error);
         alert(`❌ Error al enviar el correo: ${error.message}
@@ -6195,6 +6347,14 @@ function registrarEnvioCorreo(tipoCorreo, rutAlumno, emailDestino) {
 }
 
 function envioMasivoMorosos() {
+    console.log('📧 === INICIANDO DIAGNÓSTICO DE CORREOS MASIVOS ===');
+    console.log(`📊 Total alumnos cargados: ${datosAlumnos.length}`);
+    
+    if (datosAlumnos.length === 0) {
+        alert('❌ No hay datos de alumnos cargados. Asegúrate de cargar el CSV o conectar Supabase.');
+        return;
+    }
+    
     // Filtrar solo alumnos que realmente necesitan correo de morosidad
     const alumnosMorosos = datosAlumnos.filter(alumno => {
         if (alumno.estado !== 'moroso' && alumno.estado !== 'ingreso-tardio') {
@@ -6353,7 +6513,9 @@ async function ejecutarEnvioMasivo(rutAlumnos) {
         const resultado = await response.json();
         
         // Remover loading
-        document.body.removeChild(loadingAlert);
+        if (loadingAlert && loadingAlert.parentNode) {
+            loadingAlert.parentNode.removeChild(loadingAlert);
+        }
         
         if (resultado.success) {
             const { resultados } = resultado;
@@ -6387,7 +6549,9 @@ ${resultado.simulado ? 'Los avisos de morosidad fueron procesados correctamente 
     } catch (error) {
         // Remover loading si existe
         const loadingAlert = document.querySelector('.alert.alert-warning');
-        if (loadingAlert) document.body.removeChild(loadingAlert);
+        if (loadingAlert && loadingAlert.parentNode) {
+            loadingAlert.parentNode.removeChild(loadingAlert);
+        }
         
         console.error('Error en envío masivo:', error);
         alert(`❌ Error en el envío masivo: ${error.message}
