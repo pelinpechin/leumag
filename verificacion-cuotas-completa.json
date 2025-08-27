@@ -1,0 +1,1439 @@
+{
+  "resumen": {
+    "alumnosRevisados": 865,
+    "coincidenciasPerfectas": 838,
+    "discrepanciasCuotas": 27,
+    "discrepanciasTotales": 24,
+    "noEncontrados": 0
+  },
+  "discrepancias": [
+    {
+      "alumno": {
+        "nombre": "MANCILLA CUEVAS NICOLAS DANIEL",
+        "rut": "22536494K",
+        "rutFormateado": "22.536.494-K",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 140500,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 843000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 758700,
+      "diferenciaTotalDB": 84300,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 6,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "NUNEZ AGUILAR MACARENA ARACELI",
+        "rut": "227297611",
+        "rutFormateado": "22.729.761-1",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 0,
+          "cuota_3": 0,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 140500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 126450,
+      "diferenciaTotalDB": 14050,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "ORELLANA ALARCON CATALINA ISABEL SOFIA",
+        "rut": "224629826",
+        "rutFormateado": "22.462.982-6",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 702500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 632250,
+      "diferenciaTotalDB": 70250,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "RAMIREZ VOISIER SADOC ANDRES",
+        "rut": "22559600K",
+        "rutFormateado": "22.559.600-K",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 562000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 505800,
+      "diferenciaTotalDB": 56200,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "RIVERA VERA IGNACIO ANDRES",
+        "rut": "225701156",
+        "rutFormateado": "22.570.115-6",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 421500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 379350,
+      "diferenciaTotalDB": 42150,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "ROJO VALDERRAMA DANIELA MAGDALENA",
+        "rut": "224066279",
+        "rutFormateado": "22.406.627-9",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 562000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 505800,
+      "diferenciaTotalDB": 56200,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "SALDIVIA MELLADO SAID NICOLAS ALEXANDRE",
+        "rut": "224530544",
+        "rutFormateado": "22.453.054-4",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 200000,
+          "cuota_2": 200000,
+          "cuota_3": 100000,
+          "cuota_4": 100000,
+          "cuota_5": 100000,
+          "cuota_6": 100000,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 800000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 758700,
+      "diferenciaTotalDB": 41300,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 200000,
+          "supabase": 0,
+          "diferencia": 200000
+        },
+        {
+          "cuota": 2,
+          "csv": 200000,
+          "supabase": 0,
+          "diferencia": 200000
+        },
+        {
+          "cuota": 3,
+          "csv": 100000,
+          "supabase": 0,
+          "diferencia": 100000
+        },
+        {
+          "cuota": 4,
+          "csv": 100000,
+          "supabase": 0,
+          "diferencia": 100000
+        },
+        {
+          "cuota": 5,
+          "csv": 100000,
+          "supabase": 0,
+          "diferencia": 100000
+        },
+        {
+          "cuota": 6,
+          "csv": 100000,
+          "supabase": 0,
+          "diferencia": 100000
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "VELASQUEZ PAZ MIA BELEN",
+        "rut": "223887112",
+        "rutFormateado": "22.388.711-2",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 702500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 632250,
+      "diferenciaTotalDB": 70250,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "CASTRO CALCUTTA ANTONELLA",
+        "rut": "222740452",
+        "rutFormateado": "22.274.045-2",
+        "curso": "4 MEDIO B",
+        "cuotas": {
+          "cuota_1": 103000,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 665000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 490800,
+      "diferenciaTotalDB": 174200,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 103000,
+          "supabase": 0,
+          "diferencia": 103000
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "BARRIA NUNEZ MARTINA IGNACIA",
+        "rut": "224688415",
+        "rutFormateado": "22.468.841-5",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140000,
+          "cuota_3": 140000,
+          "cuota_4": 140000,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 560500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 505800,
+      "diferenciaTotalDB": 54700,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140000,
+          "supabase": 0,
+          "diferencia": 140000
+        },
+        {
+          "cuota": 3,
+          "csv": 140000,
+          "supabase": 0,
+          "diferencia": 140000
+        },
+        {
+          "cuota": 4,
+          "csv": 140000,
+          "supabase": 0,
+          "diferencia": 140000
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "CARDENAS MUNOZ CATALINA BELEN",
+        "rut": "226074856",
+        "rutFormateado": "22.607.485-6",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 140500,
+          "cuota_7": 140500,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 983500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 885150,
+      "diferenciaTotalDB": 98350,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 6,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 7,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "CASTRO MORALES NICOLAS DANILO",
+        "rut": "225449759",
+        "rutFormateado": "22.544.975-9",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 140500,
+          "cuota_7": 140500,
+          "cuota_8": 140500,
+          "cuota_9": 140500,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 1264500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 1264500,
+      "diferenciaTotalDB": 0,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 6,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 7,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 8,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 9,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "CHIRINO VALDIVIA MARTINA ANTONELLA",
+        "rut": "225356955",
+        "rutFormateado": "22.535.695-5",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 150000,
+          "cuota_2": 142000,
+          "cuota_3": 0,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 292000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 252900,
+      "diferenciaTotalDB": 39100,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 150000,
+          "supabase": 0,
+          "diferencia": 150000
+        },
+        {
+          "cuota": 2,
+          "csv": 142000,
+          "supabase": 0,
+          "diferencia": 142000
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "DELGADO SALAS MAXIMILIANO BENJAMIN",
+        "rut": "226767525",
+        "rutFormateado": "22.676.752-5",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 140500,
+          "cuota_7": 140500,
+          "cuota_8": 140500,
+          "cuota_9": 140500,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 1264500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 1264500,
+      "diferenciaTotalDB": 0,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 6,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 7,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 8,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 9,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "GATICA SILVA BENJAMIN JAVIER",
+        "rut": "225876592",
+        "rutFormateado": "22.587.659-2",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140600,
+          "cuota_6": 140600,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 843200,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 758700,
+      "diferenciaTotalDB": 84500,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140600,
+          "supabase": 0,
+          "diferencia": 140600
+        },
+        {
+          "cuota": 6,
+          "csv": 140600,
+          "supabase": 0,
+          "diferencia": 140600
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "ITURRIAGA NAVARRO CRISTINA VICTORIA PAZ",
+        "rut": "223994172",
+        "rutFormateado": "22.399.417-2",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 200000,
+          "cuota_2": 0,
+          "cuota_3": 0,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 200000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 126450,
+      "diferenciaTotalDB": 73550,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 200000,
+          "supabase": 0,
+          "diferencia": 200000
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "MIRANDA VASQUEZ BENJAMIN NICOLAS",
+        "rut": "224590334",
+        "rutFormateado": "22.459.033-4",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 562000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 505800,
+      "diferenciaTotalDB": 56200,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "MONTANA PEREZ EMILIO ALEJANDRO",
+        "rut": "224920601",
+        "rutFormateado": "22.492.060-1",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 140500,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 843000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 758700,
+      "diferenciaTotalDB": 84300,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 6,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "NAVARRO PEDRERO YASMIN MONSERRAT",
+        "rut": "22479357K",
+        "rutFormateado": "22.479.357-K",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 150000,
+          "cuota_2": 0,
+          "cuota_3": 0,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 150000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 126450,
+      "diferenciaTotalDB": 23550,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 150000,
+          "supabase": 0,
+          "diferencia": 150000
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "OYARZO VALDEAVELLANO CATALINA FRANCISCA",
+        "rut": "224604254",
+        "rutFormateado": "22.460.425-4",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140200,
+          "cuota_3": 140200,
+          "cuota_4": 140200,
+          "cuota_5": 140200,
+          "cuota_6": 140200,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 841500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 758700,
+      "diferenciaTotalDB": 82800,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140200,
+          "supabase": 0,
+          "diferencia": 140200
+        },
+        {
+          "cuota": 3,
+          "csv": 140200,
+          "supabase": 0,
+          "diferencia": 140200
+        },
+        {
+          "cuota": 4,
+          "csv": 140200,
+          "supabase": 0,
+          "diferencia": 140200
+        },
+        {
+          "cuota": 5,
+          "csv": 140200,
+          "supabase": 0,
+          "diferencia": 140200
+        },
+        {
+          "cuota": 6,
+          "csv": 140200,
+          "supabase": 0,
+          "diferencia": 140200
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "PAIRO GONZALEZ EMILIA ALEJANDRA",
+        "rut": "224337744",
+        "rutFormateado": "22.433.774-4",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 421500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 379350,
+      "diferenciaTotalDB": 42150,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "PAREDES SALDIVIA PIA IGNACIA",
+        "rut": "224738056",
+        "rutFormateado": "22.473.805-6",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 702500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 632250,
+      "diferenciaTotalDB": 70250,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "CARCAMO DE ARMAS MARTINA BELEN",
+        "rut": "225931844",
+        "rutFormateado": "22.593.184-4",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 0,
+          "cuota_3": 0,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 140500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 126450,
+      "diferenciaTotalDB": 14050,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "TALMA OYARZUN CONSTANZA JAVIERA",
+        "rut": "223943624",
+        "rutFormateado": "22.394.362-4",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 140500,
+          "cuota_7": 140500,
+          "cuota_8": 140500,
+          "cuota_9": 140500,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 1264500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 1264500,
+      "diferenciaTotalDB": 0,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 6,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 7,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 8,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 9,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "TRIVINO OJEDA IGNACIO ALEJANDRO",
+        "rut": "224145349",
+        "rutFormateado": "22.414.534-9",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 140500,
+          "cuota_4": 140500,
+          "cuota_5": 140500,
+          "cuota_6": 140500,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 843000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 758700,
+      "diferenciaTotalDB": 84300,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 3,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 4,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 5,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 6,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "VARELA MANRIQUEZ ALEXANDRA ANTONIA",
+        "rut": "22672849K",
+        "rutFormateado": "22.672.849-K",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 0,
+          "cuota_3": 0,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 140500,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 126450,
+      "diferenciaTotalDB": 14050,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    },
+    {
+      "alumno": {
+        "nombre": "VARGAS CASTRO VALENTINA LORENA",
+        "rut": "226477098",
+        "rutFormateado": "22.647.709-8",
+        "curso": "4 MEDIO C",
+        "cuotas": {
+          "cuota_1": 140500,
+          "cuota_2": 140500,
+          "cuota_3": 0,
+          "cuota_4": 0,
+          "cuota_5": 0,
+          "cuota_6": 0,
+          "cuota_7": 0,
+          "cuota_8": 0,
+          "cuota_9": 0,
+          "cuota_10": 0
+        }
+      },
+      "totalCSV": 281000,
+      "totalSupabaseCalculado": 0,
+      "totalSupabaseDB": 252900,
+      "diferenciaTotalDB": 28100,
+      "discrepanciasCuotas": [
+        {
+          "cuota": 1,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        },
+        {
+          "cuota": 2,
+          "csv": 140500,
+          "supabase": 0,
+          "diferencia": 140500
+        }
+      ]
+    }
+  ]
+}
