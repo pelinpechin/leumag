@@ -33,57 +33,45 @@ document.addEventListener('DOMContentLoaded', function() {
     mostrarVista('admin'); // Iniciar en vista de administración
 });
 
-function inicializarSistema() {
-    console.log('🔄 Inicializando sistema...');
+async function inicializarSistema() {
+    console.log('🔄 Inicializando sistema solo con Supabase...');
     
-    // FORZAR LIMPIEZA DE LOCALSTORAGE PARA USAR CSV ACTUALIZADO
-    console.log('🧹 Limpiando localStorage para forzar recarga desde CSV...');
-    localStorage.removeItem('datosTesoreria');
+    // Limpiar localStorage completamente - ya no lo usamos
+    console.log('🧹 Limpiando localStorage - Modo solo Supabase...');
+    localStorage.clear();
     
-    // Intentar cargar datos guardados primero
-    const datosEncontrados = cargarDatosGuardados();
-    console.log('📦 Datos encontrados en localStorage:', datosEncontrados);
-    
-    // Si no hay datos guardados, cargar desde el archivo CSV
-    if (!datosEncontrados) {
-        console.log('📄 Cargando desde CSV...');
-        cargarArchivoAutomatico();
+    // Intentar cargar datos desde Supabase
+    try {
+        console.log('📡 Cargando datos desde Supabase...');
+        const cargadoSupabase = await cargarDatosDesdeSupabase();
+        
+        if (cargadoSupabase && datosAlumnos.length > 0) {
+            console.log(`✅ Datos cargados desde Supabase: ${datosAlumnos.length} alumnos`);
+            mostrarEstadoSupabase(true);
+        } else {
+            console.log('⚠️ No se encontraron datos en Supabase');
+            mostrarMensajeSinDatos();
+            mostrarEstadoSupabase(false);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error cargando desde Supabase:', error);
+        mostrarMensajeSinDatos();
+        mostrarEstadoSupabase(false);
     }
     
-    // Debug: mostrar datos después de la carga
+    // Eliminar botones innecesarios en modo solo Supabase
+    eliminarBotonesMigracion();
+}
+    
+    // Actualizar interfaz después de cargar datos
     setTimeout(() => {
-        console.log('🎯 DATOS FINALES CARGADOS:');
-        console.log(`👥 Total alumnos: ${datosAlumnos.length}`);
-        
-        // AGREGAR ALUMNO DE PRUEBA para testing
-        const alumnoPrueba = {
-            rut: '27289800-6',
-            nombre: 'JUAN CARLOS PÉREZ GONZÁLEZ',
-            curso: '8 BASICO A',
-            fechaNacimiento: '2010-05-15',
-            numeroCuotas: 10,
-            totalAPagar: 1600000,
-            totalPagado: 960000,
-            pendiente: 640000,
-            estado: 'moroso',
-            añoEscolar: 2025,
-            cuotas: []
-        };
-        
-        // Solo agregar si no existe ya
-        if (!datosAlumnos.find(a => a.rut.replace(/[.-]/g, '') === '272898006')) {
-            datosAlumnos.push(alumnoPrueba);
-            console.log('✅ Agregado alumno de prueba: Juan Carlos Pérez González - RUT: 27.289.800-6');
-        }
-        
-        console.log(`👥 Total alumnos (con prueba): ${datosAlumnos.length}`);
         if (datosAlumnos.length > 0) {
-            console.log('📋 Primeros 3 alumnos:');
-            datosAlumnos.slice(0, 3).forEach((alumno, i) => {
-                console.log(`${i+1}. ${alumno.nombre} - RUT: ${alumno.rut}`);
-            });
+            actualizarCursos();
+            aplicarFiltros();
+            actualizarEstadisticas();
         }
-    }, 2000);
+    }, 1000);
 }
 
 function configurarEventos() {
@@ -95,6 +83,135 @@ function configurarEventos() {
     document.getElementById('filtroCurso').addEventListener('change', aplicarFiltros);
     document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
 }
+
+// ========================================
+// FUNCIONES PARA MODO SOLO SUPABASE
+// ========================================
+
+function mostrarMensajeSinDatos() {
+    const container = document.querySelector('.container');
+    const mensajeDiv = document.createElement('div');
+    mensajeDiv.id = 'mensaje-sin-datos';
+    mensajeDiv.className = 'alert alert-warning text-center mt-3';
+    mensajeDiv.innerHTML = `
+        <h5>📋 Sistema de Tesorería - Modo Supabase</h5>
+        <p><strong>No se encontraron datos en Supabase.</strong></p>
+        <p>Este sistema ahora funciona exclusivamente con Supabase. Para empezar:</p>
+        <ol class="text-start">
+            <li><strong>Si es tu primera vez:</strong> Carga el CSV y usa "🚀 Migrar a Supabase" una vez</li>
+            <li><strong>Si ya migraste:</strong> Los datos deberían cargarse automáticamente</li>
+            <li><strong>Si hay problemas:</strong> Verifica la configuración de Supabase</li>
+        </ol>
+        <button class="btn btn-primary" onclick="window.location.reload()">🔄 Recargar desde Supabase</button>
+    `;
+    container.insertBefore(mensajeDiv, container.firstChild);
+}
+
+function eliminarBotonesMigracion() {
+    // Eliminar botón de cargar CSV (ya no es necesario)
+    const btnCargarCSV = document.querySelector('button[onclick="document.getElementById(\'csvFile\').click()"]');
+    if (btnCargarCSV) {
+        console.log('🗑️ Eliminando botón Cargar CSV');
+        btnCargarCSV.remove();
+    }
+    
+    // Eliminar input de archivo CSV
+    const inputCSV = document.getElementById('csvFile');
+    if (inputCSV) {
+        inputCSV.remove();
+    }
+    
+    // Cambiar el botón de migración por botón de recarga
+    const btnMigrar = document.querySelector('button[onclick="migrarAutomaticamente()"]');
+    if (btnMigrar) {
+        console.log('🔄 Convirtiendo botón migrar en botón recargar');
+        btnMigrar.textContent = '🔄 Recargar Datos';
+        btnMigrar.title = 'Recargar datos desde Supabase';
+        btnMigrar.onclick = recargarDatosSupabase;
+        btnMigrar.className = 'btn btn-success btn-sm';
+    }
+}
+
+async function recargarDatosSupabase() {
+    console.log('🔄 Recargando datos desde Supabase...');
+    
+    // Mostrar loading
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'alert alert-info text-center';
+    loadingDiv.innerHTML = `
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        🔄 <strong>Recargando datos desde Supabase...</strong>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(loadingDiv, container.firstChild);
+    
+    try {
+        // Limpiar datos actuales
+        datosAlumnos = [];
+        datosFiltrados = [];
+        
+        // Recargar desde Supabase
+        const cargadoSupabase = await cargarDatosDesdeSupabase();
+        
+        // Remover loading
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        // Remover mensaje de sin datos si existe
+        const mensajeSinDatos = document.getElementById('mensaje-sin-datos');
+        if (mensajeSinDatos) {
+            mensajeSinDatos.remove();
+        }
+        
+        if (cargadoSupabase && datosAlumnos.length > 0) {
+            console.log(`✅ Datos recargados: ${datosAlumnos.length} alumnos`);
+            mostrarEstadoSupabase(true);
+            
+            // Actualizar interfaz
+            actualizarCursos();
+            aplicarFiltros();
+            actualizarEstadisticas();
+            
+            alert(`✅ Datos recargados exitosamente!
+
+📊 Total de alumnos: ${datosAlumnos.length}
+🔄 Los datos están sincronizados con Supabase`);
+        } else {
+            console.log('⚠️ No se encontraron datos en Supabase');
+            mostrarMensajeSinDatos();
+            mostrarEstadoSupabase(false);
+            
+            alert(`⚠️ No se encontraron datos en Supabase
+
+Posibles causas:
+• Los datos aún no se han migrado a Supabase
+• Problemas de conectividad
+• Configuración incorrecta de Supabase
+
+Si es tu primera vez, necesitas migrar los datos desde el CSV.`);
+        }
+        
+    } catch (error) {
+        // Remover loading si existe
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        console.error('❌ Error recargando datos:', error);
+        mostrarEstadoSupabase(false);
+        
+        alert(`❌ Error recargando datos desde Supabase: ${error.message}
+
+Por favor verifica:
+• Conexión a internet
+• Configuración de Supabase
+• Estado del servicio Supabase`);
+    }
+}
+
+// ========================================
 
 async function cargarArchivoAutomatico() {
     try {
@@ -1779,31 +1896,16 @@ function procesarPagoParcial(cuotasAPagar, montoAPagar, mediosPago) {
     });
 }
 
+// Función legacy - ya no guarda en localStorage (modo solo Supabase)
 function guardarDatos() {
-    try {
-        localStorage.setItem('datosTesoreria', JSON.stringify(datosAlumnos));
-        console.log('Datos guardados en localStorage');
-    } catch (error) {
-        console.error('Error al guardar datos:', error);
-    }
+    console.log('ℹ️ guardarDatos() llamada - Modo solo Supabase: datos se sincronizan automáticamente');
+    // No hace nada - los datos se persisten automáticamente en Supabase
 }
 
+// Función legacy - ya no carga desde localStorage (modo solo Supabase)
 function cargarDatosGuardados() {
-    try {
-        const datosGuardados = localStorage.getItem('datosTesoreria');
-        console.log('🔍 localStorage datosTesoreria:', datosGuardados ? 'encontrado' : 'no encontrado');
-        if (datosGuardados) {
-            datosAlumnos = JSON.parse(datosGuardados);
-            console.log(`📊 Datos parseados: ${datosAlumnos.length} alumnos`);
-            actualizarCursos();
-            aplicarFiltros();
-            actualizarEstadisticas();
-            console.log(`✅ Datos cargados desde localStorage: ${datosAlumnos.length} alumnos`);
-            return true;
-        }
-    } catch (error) {
-        console.error('❌ Error al cargar datos guardados:', error);
-    }
+    console.log('ℹ️ cargarDatosGuardados() llamada - Modo solo Supabase: datos se cargan desde inicializarSistema()');
+    // Siempre retorna false para forzar carga desde Supabase
     return false;
 }
 
