@@ -6559,8 +6559,8 @@ Por favor verifique:
 
 // Función para migración automática a Supabase (Frontend)
 
-// Función para obtener el estado de una cuota específica
-function obtenerEstadoCuota(alumno, numeroCuota) {
+// Función para obtener el estado de una cuota específica de pago
+function obtenerEstadoCuotaPago(alumno, numeroCuota) {
     const montoCuota = alumno[`cuota_${numeroCuota}`] || 0;
     const montoEsperado = Math.ceil(alumno.arancel / 10); // Dividir arancel en 10 cuotas aproximadamente
     
@@ -6578,7 +6578,7 @@ function mostrarDetalleCuotas(alumno) {
     let htmlCuotas = '<div class="row">';
     
     for (let i = 1; i <= 10; i++) {
-        const estadoCuota = obtenerEstadoCuota(alumno, i);
+        const estadoCuota = obtenerEstadoCuotaPago(alumno, i);
         const montoCuota = alumno[`cuota_${i}`] || 0;
         
         htmlCuotas += `
@@ -6613,7 +6613,7 @@ function actualizarModalDetalleAlumno(alumno) {
     let cuotasPendientes = 0;
     
     for (let i = 1; i <= 10; i++) {
-        const estadoCuota = obtenerEstadoCuota(alumno, i);
+        const estadoCuota = obtenerEstadoCuotaPago(alumno, i);
         switch (estadoCuota.estado) {
             case 'pagada': cuotasPagadas++; break;
             case 'parcial': cuotasParciales++; break;
@@ -6659,8 +6659,8 @@ function actualizarModalDetalleAlumno(alumno) {
     }
 }
 
-// Función para obtener el estado de una cuota específica
-function obtenerEstadoCuota(alumno, numeroCuota) {
+// Función para obtener el estado de una cuota específica de pago
+function obtenerEstadoCuotaPago(alumno, numeroCuota) {
     const montoCuota = alumno[`cuota_${numeroCuota}`] || 0;
     const montoEsperado = Math.ceil(alumno.arancel / 10); // Dividir arancel en 10 cuotas aproximadamente
     
@@ -6678,7 +6678,7 @@ function mostrarDetalleCuotas(alumno) {
     let htmlCuotas = '<div class="row">';
     
     for (let i = 1; i <= 10; i++) {
-        const estadoCuota = obtenerEstadoCuota(alumno, i);
+        const estadoCuota = obtenerEstadoCuotaPago(alumno, i);
         const montoCuota = alumno[`cuota_${i}`] || 0;
         
         htmlCuotas += `
@@ -6713,7 +6713,7 @@ function actualizarModalDetalleAlumno(alumno) {
     let cuotasPendientes = 0;
     
     for (let i = 1; i <= 10; i++) {
-        const estadoCuota = obtenerEstadoCuota(alumno, i);
+        const estadoCuota = obtenerEstadoCuotaPago(alumno, i);
         switch (estadoCuota.estado) {
             case 'pagada': cuotasPagadas++; break;
             case 'parcial': cuotasParciales++; break;
