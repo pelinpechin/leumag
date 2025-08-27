@@ -92,6 +92,109 @@ function configurarEventos() {
 // FUNCIONES PARA MODO SOLO SUPABASE
 // ========================================
 
+// Función para obtener el cliente de Supabase
+function getSupabaseClient() {
+    // Intentar usar el cliente ya inicializado
+    if (window.supabaseClient) {
+        return window.supabaseClient;
+    }
+    
+    // Intentar inicializar directamente si está disponible el CDN
+    if (window.supabase && window.SUPABASE_CONFIG) {
+        try {
+            const client = window.supabase.createClient(
+                window.SUPABASE_CONFIG.url,
+                window.SUPABASE_CONFIG.anonKey
+            );
+            window.supabaseClient = client;
+            console.log('✅ Cliente Supabase inicializado directamente');
+            return client;
+        } catch (error) {
+            console.error('❌ Error inicializando cliente Supabase:', error);
+        }
+    }
+    
+    console.warn('⚠️ No se pudo obtener cliente de Supabase');
+    return null;
+}
+
+// Función para cargar datos desde Supabase
+async function cargarDatosDesdeSupabase() {
+    const client = getSupabaseClient();
+    if (!client) {
+        console.error('❌ Cliente Supabase no disponible');
+        return false;
+    }
+
+    try {
+        console.log('📡 Cargando datos desde Supabase...');
+
+        // Cargar TODOS los alumnos con sus cuotas y apoderados
+        const { data: alumnos, error } = await client
+            .from('alumnos')
+            .select(`
+                *,
+                cuotas (*),
+                apoderados (*)
+            `)
+            .order('nombre')
+            .limit(1000);
+
+        if (error) {
+            console.error('❌ Error de Supabase:', error);
+            throw error;
+        }
+
+        console.log(`📊 Respuesta de Supabase: ${alumnos ? alumnos.length : 0} alumnos encontrados`);
+
+        if (alumnos && alumnos.length > 0) {
+            // Convertir formato de Supabase al formato local
+            datosAlumnos = alumnos.map(alumno => ({
+                id: alumno.id,
+                nombre: alumno.nombre,
+                rut: alumno.rut,
+                curso: alumno.curso,
+                arancel: alumno.arancel,
+                beca: alumno.beca,
+                totalPagado: alumno.total_pagado,
+                pendiente: alumno.pendiente,
+                estado: alumno.estado,
+                añoEscolar: alumno.año_escolar,
+                
+                // Convertir cuotas
+                cuotas: (alumno.cuotas || [])
+                    .sort((a, b) => a.numero - b.numero)
+                    .map(cuota => ({
+                        numero: cuota.numero,
+                        monto: cuota.monto,
+                        pagada: cuota.pagada,
+                        fechaPago: cuota.fecha_pago,
+                        metodoPago: cuota.metodo_pago
+                    })),
+                
+                // Información del apoderado
+                apoderado: alumno.apoderados?.[0]?.nombre || '',
+                correoApoderado: alumno.apoderados?.[0]?.email || ''
+            }));
+
+            console.log(`✅ Cargados ${datosAlumnos.length} alumnos desde Supabase`);
+            
+            // Actualizar interfaz
+            actualizarCursos();
+            aplicarFiltros();
+            actualizarEstadisticas();
+            
+            return true;
+        }
+
+        return false;
+
+    } catch (error) {
+        console.error('❌ Error cargando desde Supabase:', error);
+        return false;
+    }
+}
+
 function mostrarMensajeSinDatos() {
     const container = document.querySelector('.container');
     const mensajeDiv = document.createElement('div');
