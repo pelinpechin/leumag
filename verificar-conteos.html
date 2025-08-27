@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Conteos - Diagnóstico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>🔍 Verificar Conteos - Diagnóstico</h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h4>📁 Archivo CSV</h4>
+                <input type="file" id="csvFile" class="form-control" accept=".csv">
+                <div id="csvInfo" class="mt-2"></div>
+            </div>
+            <div class="col-md-6">
+                <h4>📡 Supabase</h4>
+                <button class="btn btn-primary" onclick="verificarSupabase()">Verificar Conteo Real</button>
+                <div id="supabaseInfo" class="mt-2"></div>
+            </div>
+        </div>
+        
+        <div id="analisis" class="mt-4"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_CONFIG = {
+            url: 'https://iajcxlymwqeltfmedmkj.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhamN4bHltd3FlbHRmbWVkbWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMzM2MjYsImV4cCI6MjA3MTgwOTYyNn0.tOOiZglUQ5m1xXDLsjxux5HSNQ7AtRk_Hr1Ntdu03yk'
+        };
+
+        let supabaseClient = null;
+        let alumnosCSV = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        });
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvContent = e.target.result;
+                alumnosCSV = parseCSV(csvContent);
+                
+                // Analizar duplicados en CSV
+                const rutsCsv = alumnosCSV.map(a => a.rut);
+                const duplicadosCsv = rutsCsv.filter((rut, index) => rutsCsv.indexOf(rut) !== index);
+                
+                document.getElementById('csvInfo').innerHTML = `
+                    <div class="alert alert-info">
+                        ✅ CSV cargado: ${alumnosCSV.length} alumnos<br>
+                        ${duplicadosCsv.length > 0 ? `⚠️ Duplicados: ${duplicadosCsv.length}` : '✅ Sin duplicados'}
+                    </div>
+                `;
+            };
+            reader.readAsText(file);
+        });
+
+        function parseCSV(csvContent) {
+            const lines = csvContent.split('\n');
+            const alumnos = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line || line.startsWith('totales')) continue;
+                
+                const values = line.split(';');
+                if (values.length < 3) continue;
+                
+                const nombre = values[0]?.trim();
+                const rut = values[1]?.trim();
+                const curso = values[2]?.trim();
+                
+                if (nombre && rut && curso) {
+                    alumnos.push({
+                        nombre,
+                        rut: rut.replace(/[.-]/g, ''),
+                        rutFormateado: rut,
+                        curso
+                    });
+                }
+            }
+            
+            return alumnos;
+        }
+
+        async function verificarSupabase() {
+            try {
+                // Contar total
+                const { count, error } = await supabaseClient
+                    .from('alumnos')
+                    .select('*', { count: 'exact', head: true });
+
+                if (error) throw error;
+
+                // Obtener todos los datos para análisis
+                const { data: alumnos, error: dataError } = await supabaseClient
+                    .from('alumnos')
+                    .select('nombre, rut, curso')
+                    .order('nombre');
+
+                if (dataError) throw dataError;
+
+                // Analizar duplicados
+                const rutsSupabase = alumnos.map(a => a.rut.replace(/[.-]/g, ''));
+                const duplicados = rutsSupabase.filter((rut, index) => rutsSupabase.indexOf(rut) !== index);
+                
+                // Contar por curso
+                const porCurso = {};
+                alumnos.forEach(alumno => {
+                    porCurso[alumno.curso] = (porCurso[alumno.curso] || 0) + 1;
+                });
+
+                document.getElementById('supabaseInfo').innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ Supabase: ${count} alumnos<br>
+                        ${duplicados.length > 0 ? `⚠️ Duplicados: ${duplicados.length}` : '✅ Sin duplicados'}
+                    </div>
+                `;
+
+                // Mostrar análisis detallado
+                const cursosHtml = Object.entries(porCurso)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([curso, cantidad]) => `<tr><td>${curso}</td><td>${cantidad}</td></tr>`)
+                    .join('');
+
+                document.getElementById('analisis').innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>📊 Análisis Detallado</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Conteos:</h6>
+                                    <ul>
+                                        <li><strong>CSV:</strong> ${alumnosCSV.length} alumnos</li>
+                                        <li><strong>Supabase:</strong> ${count} alumnos</li>
+                                        <li><strong>Diferencia:</strong> ${Math.abs(count - alumnosCSV.length)} alumnos</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Alumnos por Curso:</h6>
+                                    <div style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr><th>Curso</th><th>Cantidad</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                ${cursosHtml}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('supabaseInfo').innerHTML = `
+                    <div class="alert alert-danger">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
