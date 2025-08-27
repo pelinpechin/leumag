@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparar Alumnos - CSV vs Supabase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>🔍 Comparar Alumnos - CSV vs Supabase</h2>
+        <p>Herramienta para identificar los 30 alumnos faltantes</p>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h4>📁 Cargar CSV</h4>
+                <input type="file" id="csvFile" class="form-control" accept=".csv">
+                <div id="csvInfo" class="mt-2"></div>
+            </div>
+            <div class="col-md-6">
+                <h4>📡 Datos de Supabase</h4>
+                <button class="btn btn-primary" onclick="cargarSupabase()">Cargar desde Supabase</button>
+                <div id="supabaseInfo" class="mt-2"></div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <button class="btn btn-success" onclick="compararDatos()" disabled id="btnComparar">
+                    🔍 Comparar y Encontrar Faltantes
+                </button>
+            </div>
+        </div>
+        
+        <div id="resultados" class="mt-4"></div>
+        <div id="alumnosFaltantes" class="mt-4"></div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_CONFIG = {
+            url: 'https://iajcxlymwqeltfmedmkj.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhamN4bHltd3FlbHRmbWVkbWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMzM2MjYsImV4cCI6MjA3MTgwOTYyNn0.tOOiZglUQ5m1xXDLsjxux5HSNQ7AtRk_Hr1Ntdu03yk'
+        };
+
+        let alumnosCSV = [];
+        let alumnosSupabase = [];
+        let supabaseClient = null;
+
+        // Inicializar Supabase
+        document.addEventListener('DOMContentLoaded', function() {
+            supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+            console.log('✅ Cliente Supabase inicializado');
+        });
+
+        // Manejar carga de CSV
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvContent = e.target.result;
+                alumnosCSV = parseCSV(csvContent);
+                
+                document.getElementById('csvInfo').innerHTML = `
+                    <div class="alert alert-info">
+                        ✅ CSV cargado: ${alumnosCSV.length} alumnos
+                    </div>
+                `;
+                
+                verificarDatosCompletos();
+            };
+            reader.readAsText(file);
+        });
+
+        function parseCSV(csvContent) {
+            const lines = csvContent.split('\\n');
+            const alumnos = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line || line.startsWith('totales')) continue;
+                
+                const values = line.split(';');
+                if (values.length < 3) continue;
+                
+                const nombre = values[0]?.trim();
+                const rut = values[1]?.trim();
+                const curso = values[2]?.trim();
+                
+                if (nombre && rut && curso) {
+                    alumnos.push({
+                        nombre,
+                        rut: rut.replace(/[.-]/g, ''),
+                        rutFormateado: rut,
+                        curso
+                    });
+                }
+            }
+            
+            return alumnos;
+        }
+
+        async function cargarSupabase() {
+            if (!supabaseClient) {
+                alert('❌ Cliente Supabase no disponible');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('alumnos')
+                    .select('nombre, rut, curso')
+                    .order('nombre');
+
+                if (error) throw error;
+
+                alumnosSupabase = data.map(alumno => ({
+                    ...alumno,
+                    rutLimpio: alumno.rut.replace(/[.-]/g, '')
+                }));
+
+                document.getElementById('supabaseInfo').innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ Supabase cargado: ${alumnosSupabase.length} alumnos
+                    </div>
+                `;
+
+                verificarDatosCompletos();
+
+            } catch (error) {
+                console.error('❌ Error cargando Supabase:', error);
+                document.getElementById('supabaseInfo').innerHTML = `
+                    <div class="alert alert-danger">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function verificarDatosCompletos() {
+            const btnComparar = document.getElementById('btnComparar');
+            if (alumnosCSV.length > 0 && alumnosSupabase.length > 0) {
+                btnComparar.disabled = false;
+            }
+        }
+
+        function compararDatos() {
+            // Crear sets de RUTs para comparación rápida
+            const rutsSupabase = new Set(alumnosSupabase.map(a => a.rutLimpio));
+            
+            // Encontrar alumnos del CSV que NO están en Supabase
+            const faltantes = alumnosCSV.filter(alumnoCSV => 
+                !rutsSupabase.has(alumnoCSV.rut)
+            );
+            
+            // Mostrar resultados
+            document.getElementById('resultados').innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h5>📊 Resultados de la Comparación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="alert alert-info text-center">
+                                    <h6>📁 CSV</h6>
+                                    <h4>${alumnosCSV.length}</h4>
+                                    <small>alumnos</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-success text-center">
+                                    <h6>📡 Supabase</h6>
+                                    <h4>${alumnosSupabase.length}</h4>
+                                    <small>alumnos</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-warning text-center">
+                                    <h6>❌ Faltantes</h6>
+                                    <h4>${faltantes.length}</h4>
+                                    <small>alumnos</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (faltantes.length > 0) {
+                mostrarAlumnosFaltantes(faltantes);
+            }
+        }
+
+        function mostrarAlumnosFaltantes(faltantes) {
+            const html = `
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <h5>❌ Alumnos Faltantes en Supabase (${faltantes.length})</h5>
+                        <button class="btn btn-success btn-sm" onclick="generarInsertSQL()">
+                            📄 Generar SQL INSERT
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre</th>
+                                        <th>RUT</th>
+                                        <th>Curso</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${faltantes.map((alumno, i) => `
+                                        <tr>
+                                            <td>${i + 1}</td>
+                                            <td>${alumno.nombre}</td>
+                                            <td>${alumno.rutFormateado}</td>
+                                            <td>${alumno.curso}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('alumnosFaltantes').innerHTML = html;
+            
+            // Guardar para usar en SQL
+            window.alumnosFaltantes = faltantes;
+        }
+
+        function generarInsertSQL() {
+            if (!window.alumnosFaltantes) {
+                alert('❌ No hay alumnos faltantes para generar SQL');
+                return;
+            }
+            
+            const inserts = window.alumnosFaltantes.map(alumno => 
+                `INSERT INTO alumnos (nombre, rut, curso, arancel, beca, total_pagado, pendiente, estado, año_escolar) VALUES ('${alumno.nombre}', '${alumno.rutFormateado}', '${alumno.curso}', 1265000, 0, 0, 1265000, 'Pendiente', 2025);`
+            );
+            
+            const sqlCompleto = inserts.join('\\n\\n');
+            
+            // Crear modal con SQL
+            const modal = `
+                <div class="modal fade" id="sqlModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">📄 SQL INSERT para Alumnos Faltantes</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Instrucciones:</strong></p>
+                                <ol>
+                                    <li>Copia el SQL de abajo</li>
+                                    <li>Ve a Supabase → SQL Editor</li>
+                                    <li>Pega y ejecuta el SQL</li>
+                                    <li>Recarga el sistema principal</li>
+                                </ol>
+                                <textarea class="form-control" rows="15" readonly onclick="this.select()">${sqlCompleto}</textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                <button type="button" class="btn btn-primary" onclick="copiarSQL()">📋 Copiar SQL</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modal);
+            const modalElement = new bootstrap.Modal(document.getElementById('sqlModal'));
+            modalElement.show();
+        }
+
+        function copiarSQL() {
+            const textarea = document.querySelector('#sqlModal textarea');
+            textarea.select();
+            document.execCommand('copy');
+            alert('✅ SQL copiado al portapapeles');
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

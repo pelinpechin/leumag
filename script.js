@@ -129,7 +129,7 @@ async function cargarDatosDesdeSupabase() {
     try {
         console.log('📡 Cargando datos desde Supabase...');
 
-        // Cargar TODOS los alumnos con sus cuotas y apoderados
+        // Cargar TODOS los alumnos con sus cuotas y apoderados - SIN LÍMITE
         const { data: alumnos, error } = await client
             .from('alumnos')
             .select(`
@@ -137,8 +137,7 @@ async function cargarDatosDesdeSupabase() {
                 cuotas (*),
                 apoderados (*)
             `)
-            .order('nombre')
-            .limit(1000);
+            .order('nombre');
 
         if (error) {
             console.error('❌ Error de Supabase:', error);
