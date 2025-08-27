@@ -221,48 +221,48 @@ async function migrarDatos(alumnos) {
 // Handler principal
 exports.handler = async (event, context) => {
     console.log('🎯 Endpoint de migración activado');
-    console.log('📍 Environment info:', {
-        cwd: process.cwd(),
-        dirname: __dirname,
-        taskRoot: process.env.LAMBDA_TASK_ROOT,
-        nodeEnv: process.env.NODE_ENV
-    });
     
     try {
-        // Leer archivo CSV - probar múltiples ubicaciones posibles
-        let csvContent;
-        const posiblesPaths = [
-            path.join(__dirname, '../../alumnos_final.csv'),
-            path.join(process.cwd(), 'alumnos_final.csv'),
-            './alumnos_final.csv',
-            '/opt/build/repo/alumnos_final.csv',
-            path.join(process.env.LAMBDA_TASK_ROOT || '', '../../alumnos_final.csv')
-        ];
+        let csvContent = null;
         
-        let csvPath = null;
-        
-        for (const pathToTry of posiblesPaths) {
+        // Opción 1: Si se envían datos en el body de la request
+        if (event.body) {
             try {
-                console.log(`🔍 Intentando leer CSV desde: ${pathToTry}`);
-                if (fs.existsSync(pathToTry)) {
-                    csvContent = fs.readFileSync(pathToTry, 'utf-8');
-                    csvPath = pathToTry;
-                    console.log(`✅ CSV leído correctamente desde: ${pathToTry}`);
-                    break;
+                const body = JSON.parse(event.body);
+                if (body.csvData) {
+                    console.log('📡 Usando CSV enviado desde frontend');
+                    csvContent = body.csvData;
                 }
-            } catch (error) {
-                console.log(`❌ No encontrado en: ${pathToTry}`);
-                continue;
+            } catch (e) {
+                console.log('⚠️ No se pudo parsear body de la request');
             }
         }
         
+        // Opción 2: Intentar leer desde el repositorio usando fetch
         if (!csvContent) {
-            // Si no encuentra el archivo, usar datos hardcodeados de ejemplo
-            console.log('⚠️ CSV no encontrado, usando datos de ejemplo...');
+            try {
+                console.log('🔍 Intentando obtener CSV desde GitHub...');
+                const response = await fetch('https://raw.githubusercontent.com/pelinpechin/leumag/main/alumnos_final.csv');
+                if (response.ok) {
+                    csvContent = await response.text();
+                    console.log('✅ CSV obtenido desde GitHub');
+                }
+            } catch (error) {
+                console.log('❌ No se pudo obtener CSV desde GitHub:', error.message);
+            }
+        }
+        
+        // Opción 3: Usar datos de ejemplo hardcodeados
+        if (!csvContent) {
+            console.log('⚠️ Usando datos de ejemplo hardcodeados...');
             csvContent = `nombre alumno;rut;curso;ARANCEL;MONTO DE BECA;CUOTA010PAGADA;CUOTA 2 PAGADA;CUOTA 3 PAGADA;CUOTA 4 PAGADA;CUOTA 5 PAGADA;CUOTA 6 PAGADA;CUOTA 7 PAGADA;CUOTA 8 PAGADA;CUOTA 9 PAGADA;CUOTA 10 PAGADA;total pagado;
 AGUAYO LARA ISIDORA BELEN;27.260.721-4;NT1 A;$1.265.000;$0;126500;126500;126500;;;;;;;;379500;
 ALVARADO SANCHEZ MAITE SABRINA;27.332.182-9;NT1 A;$1.265.000;$0;126500;126500;126500;126500;126500;;;;;;632500;
-GONZALEZ GALLARDO MIGUEL HERNAN;27.278.056-0;NT1 A;$80.100;$0;80100;;;;;;;;;;80100;`;
+ARANCIBIA ALVAREZ IGNACIO ANDRES;27.314.685-7;NT1 A;$1.265.000;$0;126741;126259;126500;126500;126500;126500;;;;;759000;
+CANTO RUFATT ANNIA PASCAL;27.289.800-6;NT1 A;$1.265.000;$0;126500;126500;126500;126500;126500;;;;;;632500;
+GONZALEZ GALLARDO MIGUEL HERNAN;27.278.056-0;NT1 A;$80.100;$0;80100;;;;;;;;;;80100;
+GONZALEZ TORRES CRISTOPHER EZEQUIEL;27429302-0;NT1 A;$1.265.000;$1.265.000;;;;;;;;;;;0;
+HARO GATICA RENATA ISABELLA;27.286.732-1;NT1 A;$1.265.000;$0;126500;126500;126500;126500;126500;;;;;;632500;`;
         }
         
         // Parsear CSV
