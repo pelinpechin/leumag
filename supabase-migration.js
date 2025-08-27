@@ -4,7 +4,33 @@
 
 // Función para obtener el cliente de Supabase
 function getSupabaseClient() {
-    return window.supabaseClient || supabase;
+    // Intentar usar el cliente ya inicializado
+    if (window.supabaseClient) {
+        return window.supabaseClient;
+    }
+    
+    // Si hay referencia global a supabase, usar esa
+    if (supabase) {
+        return supabase;
+    }
+    
+    // Intentar inicializar directamente si está disponible el CDN
+    if (window.supabase && window.SUPABASE_CONFIG) {
+        try {
+            const client = window.supabase.createClient(
+                window.SUPABASE_CONFIG.url,
+                window.SUPABASE_CONFIG.anonKey
+            );
+            window.supabaseClient = client;
+            console.log('✅ Cliente Supabase inicializado directamente');
+            return client;
+        } catch (error) {
+            console.error('❌ Error inicializando cliente Supabase:', error);
+        }
+    }
+    
+    console.warn('⚠️ No se pudo obtener cliente de Supabase');
+    return null;
 }
 
 // Función para corregir políticas RLS usando SQL directo
@@ -229,14 +255,20 @@ Los datos ahora están en Supabase y se sincronizarán automáticamente.`);
 async function cargarDatosDesdeSupabase() {
     const client = getSupabaseClient();
     if (!client) {
-        console.log('⚠️ Supabase no configurado, usando localStorage');
+        console.error('❌ Cliente Supabase no disponible');
+        console.log('🔍 Debug info:', {
+            'window.supabaseClient': !!window.supabaseClient,
+            'window.supabase': !!window.supabase,
+            'window.SUPABASE_CONFIG': !!window.SUPABASE_CONFIG,
+            'supabase global': typeof supabase !== 'undefined'
+        });
         return false;
     }
 
     try {
         console.log('📡 Cargando datos desde Supabase...');
 
-        // Cargar alumnos con sus cuotas y apoderados
+        // Cargar TODOS los alumnos con sus cuotas y apoderados (sin filtro de año)
         const { data: alumnos, error } = await client
             .from('alumnos')
             .select(`
@@ -244,10 +276,15 @@ async function cargarDatosDesdeSupabase() {
                 cuotas (*),
                 apoderados (*)
             `)
-            .eq('año_escolar', 2025)
-            .order('nombre');
+            .order('nombre')
+            .limit(1000); // Asegurar que cargue hasta 1000 registros
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Error de Supabase:', error);
+            throw error;
+        }
+
+        console.log(`📊 Respuesta de Supabase: ${alumnos ? alumnos.length : 0} alumnos encontrados`);
 
         if (alumnos && alumnos.length > 0) {
             // Convertir formato de Supabase al formato local
