@@ -134,6 +134,8 @@ async function cargarDatosDesdeSupabase() {
             .from('alumnos')
             .select(`
                 *,
+                cuota_1, cuota_2, cuota_3, cuota_4, cuota_5,
+                cuota_6, cuota_7, cuota_8, cuota_9, cuota_10,
                 cuotas (*),
                 apoderados (*)
             `)
@@ -159,6 +161,18 @@ async function cargarDatosDesdeSupabase() {
                 pendiente: alumno.pendiente,
                 estado: alumno.estado,
                 añoEscolar: alumno.año_escolar,
+                
+                // Cuotas individuales
+                cuota_1: alumno.cuota_1 || 0,
+                cuota_2: alumno.cuota_2 || 0,
+                cuota_3: alumno.cuota_3 || 0,
+                cuota_4: alumno.cuota_4 || 0,
+                cuota_5: alumno.cuota_5 || 0,
+                cuota_6: alumno.cuota_6 || 0,
+                cuota_7: alumno.cuota_7 || 0,
+                cuota_8: alumno.cuota_8 || 0,
+                cuota_9: alumno.cuota_9 || 0,
+                cuota_10: alumno.cuota_10 || 0,
                 
                 // Convertir cuotas
                 cuotas: (alumno.cuotas || [])
