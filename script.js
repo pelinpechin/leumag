@@ -6562,3 +6562,112 @@ Por favor verifique:
 • Servidor en funcionamiento`);
     }
 }
+
+// Función para migración automática a Supabase
+async function migrarAutomaticamente() {
+    console.log('🚀 Iniciando migración automática...');
+    
+    // Confirmar acción
+    const proceder = confirm(`🚀 Migración Automática a Supabase
+
+Esta función migrará todos los datos del CSV directamente a Supabase de forma automática.
+
+✅ Ventajas:
+• No requiere intervención manual
+• Maneja políticas RLS automáticamente 
+• Procesa todos los alumnos y cuotas
+• Actualiza datos existentes
+
+⚠️ Importante:
+• Los datos se leerán directamente del archivo CSV del servidor
+• La migración puede tomar algunos minutos
+• Se crearán/actualizarán registros en Supabase
+
+¿Deseas proceder con la migración automática?`);
+    
+    if (!proceder) {
+        console.log('❌ Migración cancelada por el usuario');
+        return;
+    }
+    
+    // Mostrar loading
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'alert alert-info text-center';
+    loadingDiv.innerHTML = `
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        🚀 <strong>Migrando datos a Supabase...</strong><br>
+        <small>Este proceso puede tomar algunos minutos. Por favor no cierre la página.</small>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(loadingDiv, container.firstChild);
+    
+    try {
+        console.log('📡 Llamando endpoint de migración...');
+        
+        // Llamar al endpoint de migración
+        const response = await fetch('/.netlify/functions/migrate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'migrate'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+        }
+        
+        const resultado = await response.json();
+        
+        // Remover loading
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        if (resultado.success) {
+            console.log('✅ Migración completada:', resultado);
+            
+            alert(`🎉 Migración Automática Completada!
+
+✅ Alumnos migrados exitosamente: ${resultado.migrados}
+❌ Errores encontrados: ${resultado.errores}  
+📊 Total procesados: ${resultado.total}
+
+Los datos ahora están disponibles en Supabase y se sincronizarán automáticamente.
+
+${resultado.migrados > 0 ? '🎯 Tip: El sistema ahora puede trabajar con datos en la nube.' : ''}`);
+            
+            // Opcional: Recargar la página para mostrar datos de Supabase
+            if (resultado.migrados > 0) {
+                const recargar = confirm('¿Deseas recargar la página para usar los datos de Supabase?');
+                if (recargar) {
+                    window.location.reload();
+                }
+            }
+            
+        } else {
+            throw new Error(resultado.error || 'Error en la migración automática');
+        }
+        
+    } catch (error) {
+        // Remover loading si existe
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        console.error('❌ Error en migración automática:', error);
+        
+        alert(`❌ Error en la migración automática: ${error.message}
+
+Posibles causas:
+• Configuración incorrecta de Supabase
+• Problemas de conectividad
+• Archivo CSV no encontrado en el servidor
+• Políticas RLS muy restrictivas
+
+Por favor verifique la configuración e intente nuevamente.`);
+    }
+}

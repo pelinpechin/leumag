@@ -38,3 +38,5 @@ Thumbs.db
 *_backup.csv
 *_respaldo.csv
 *_temp.csv
+# Local Netlify folder
+.netlify
