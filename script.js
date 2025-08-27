@@ -27,10 +27,12 @@ const WEBPAY_CONFIG = {
 };
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', function() {
-    inicializarSistema();
+document.addEventListener('DOMContentLoaded', async function() {
     configurarEventos();
     mostrarVista('admin'); // Iniciar en vista de administración
+    
+    // Inicializar sistema y esperar a que complete
+    await inicializarSistema();
 });
 
 async function inicializarSistema() {
@@ -39,6 +41,9 @@ async function inicializarSistema() {
     // Limpiar localStorage completamente - ya no lo usamos
     console.log('🧹 Limpiando localStorage - Modo solo Supabase...');
     localStorage.clear();
+    
+    // Esperar a que Supabase esté disponible
+    await esperarSupabase();
     
     // Intentar cargar datos desde Supabase
     try {
@@ -62,7 +67,6 @@ async function inicializarSistema() {
     
     // Eliminar botones innecesarios en modo solo Supabase
     eliminarBotonesMigracion();
-}
     
     // Actualizar interfaz después de cargar datos
     setTimeout(() => {
@@ -258,6 +262,36 @@ window.guardarDatos = function() {
     console.log('ℹ️ guardarDatos() llamada - Modo solo Supabase con sincronización automática');
     // Los datos se mantienen en memoria y se sincronizan automáticamente
 };
+
+// Función para esperar a que Supabase esté disponible
+async function esperarSupabase() {
+    console.log('⏳ Esperando a que Supabase esté disponible...');
+    
+    // Esperar hasta 10 segundos a que Supabase se cargue
+    for (let i = 0; i < 50; i++) {
+        if (window.supabase && window.SUPABASE_CONFIG) {
+            console.log('✅ Supabase disponible');
+            
+            // Intentar inicializar si no existe el cliente
+            if (!window.supabaseClient) {
+                try {
+                    if (window.initializeSupabase) {
+                        window.initializeSupabase();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Error inicializando Supabase:', error);
+                }
+            }
+            return true;
+        }
+        
+        // Esperar 200ms antes de volver a verificar
+        await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    
+    console.warn('⚠️ Timeout esperando Supabase - continuando sin él');
+    return false;
+}
 
 // ========================================
 
