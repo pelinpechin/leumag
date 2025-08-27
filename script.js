@@ -211,6 +211,54 @@ Por favor verifica:
     }
 }
 
+// Función para sincronizar cambios automáticamente con Supabase
+async function sincronizarConSupabase(alumnoRut, tipoCambio = 'pago') {
+    if (!window.actualizarPagoSupabase) {
+        console.log('⚠️ actualizarPagoSupabase no disponible - cambio no sincronizado');
+        return;
+    }
+    
+    try {
+        console.log(`🔄 Sincronizando ${tipoCambio} para alumno ${alumnoRut}...`);
+        
+        // Encontrar el alumno en los datos locales
+        const alumno = datosAlumnos.find(a => a.rut === alumnoRut);
+        if (!alumno) {
+            console.warn(`⚠️ Alumno ${alumnoRut} no encontrado para sincronizar`);
+            return;
+        }
+        
+        // Sincronizar cada cuota que haya cambiado
+        if (alumno.cuotas) {
+            for (const cuota of alumno.cuotas) {
+                try {
+                    await window.actualizarPagoSupabase(
+                        alumnoRut,
+                        cuota.numero,
+                        cuota.pagada,
+                        cuota.monto || 0,
+                        cuota.metodoPago || 'efectivo'
+                    );
+                } catch (error) {
+                    console.warn(`⚠️ Error sincronizando cuota ${cuota.numero}:`, error.message);
+                }
+            }
+        }
+        
+        console.log(`✅ Sincronización completa para ${alumnoRut}`);
+        
+    } catch (error) {
+        console.error('❌ Error en sincronización automática:', error);
+    }
+}
+
+// Reemplazar la función guardarDatos para incluir sincronización
+const guardarDatosOriginal = window.guardarDatos || function() {};
+window.guardarDatos = function() {
+    console.log('ℹ️ guardarDatos() llamada - Modo solo Supabase con sincronización automática');
+    // Los datos se mantienen en memoria y se sincronizan automáticamente
+};
+
 // ========================================
 
 async function cargarArchivoAutomatico() {
@@ -1851,6 +1899,11 @@ function procesarPagoCompleto(cuotasAPagar, mediosPago) {
             }];
         }
     });
+    
+    // Sincronizar automáticamente con Supabase
+    if (window.alumnoGlobal) {
+        sincronizarConSupabase(window.alumnoGlobal.rut, 'pago_completo');
+    }
 }
 
 function procesarPagoParcial(cuotasAPagar, montoAPagar, mediosPago) {
@@ -1894,6 +1947,11 @@ function procesarPagoParcial(cuotasAPagar, montoAPagar, mediosPago) {
             }
         }
     });
+    
+    // Sincronizar automáticamente con Supabase
+    if (window.alumnoGlobal) {
+        sincronizarConSupabase(window.alumnoGlobal.rut, 'pago_parcial');
+    }
 }
 
 // Función legacy - ya no guarda en localStorage (modo solo Supabase)
