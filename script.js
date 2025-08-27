@@ -6563,25 +6563,38 @@ Por favor verifique:
     }
 }
 
-// Función para migración automática a Supabase
+// Función para migración automática a Supabase (Frontend)
 async function migrarAutomaticamente() {
     console.log('🚀 Iniciando migración automática...');
+    
+    // Verificar que haya datos cargados
+    if (!datosAlumnos || datosAlumnos.length === 0) {
+        alert('❌ No hay datos para migrar. Primero carga el archivo CSV usando el botón "📁 Cargar CSV".');
+        return;
+    }
+    
+    // Verificar que Supabase esté configurado
+    if (!window.supabaseClient && !window.supabase) {
+        alert('❌ Supabase no está configurado. Verifica la configuración en supabase-config.js');
+        return;
+    }
     
     // Confirmar acción
     const proceder = confirm(`🚀 Migración Automática a Supabase
 
-Esta función migrará todos los datos del CSV directamente a Supabase de forma automática.
+Esta función migrará ${datosAlumnos.length} alumnos desde los datos cargados en memoria a Supabase.
 
 ✅ Ventajas:
-• No requiere intervención manual
-• Maneja políticas RLS automáticamente 
-• Procesa todos los alumnos y cuotas
-• Actualiza datos existentes
+• Usa los datos ya cargados en el sistema
+• Proceso directo desde el navegador
+• Actualiza datos existentes sin duplicar
+• Manejo de errores en tiempo real
 
 ⚠️ Importante:
-• Los datos se leerán directamente del archivo CSV del servidor
-• La migración puede tomar algunos minutos
+• Se migrarán ${datosAlumnos.length} alumnos con sus cuotas
+• La migración puede tomar varios minutos
 • Se crearán/actualizarán registros en Supabase
+• Requiere que las políticas RLS estén desactivadas
 
 ¿Deseas proceder con la migración automática?`);
     
@@ -6595,61 +6608,165 @@ Esta función migrará todos los datos del CSV directamente a Supabase de forma 
     loadingDiv.className = 'alert alert-info text-center';
     loadingDiv.innerHTML = `
         <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-        🚀 <strong>Migrando datos a Supabase...</strong><br>
-        <small>Este proceso puede tomar algunos minutos. Por favor no cierre la página.</small>
+        🚀 <strong>Migrando ${datosAlumnos.length} alumnos a Supabase...</strong><br>
+        <small>Proceso: <span id="migracion-progreso">0</span>/${datosAlumnos.length} completados</small>
     `;
     
     const container = document.querySelector('.container');
     container.insertBefore(loadingDiv, container.firstChild);
     
     try {
-        console.log('📡 Llamando endpoint de migración...');
+        // Obtener cliente de Supabase
+        const client = window.supabaseClient || window.supabase.createClient(
+            window.SUPABASE_CONFIG.url, 
+            window.SUPABASE_CONFIG.anonKey
+        );
         
-        // Llamar al endpoint de migración
-        const response = await fetch('/.netlify/functions/migrate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'migrate'
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+        if (!client) {
+            throw new Error('No se pudo inicializar cliente de Supabase');
         }
         
-        const resultado = await response.json();
+        console.log('📡 Cliente Supabase obtenido, iniciando migración...');
+        
+        let migrados = 0;
+        let errores = 0;
+        const progressElement = document.getElementById('migracion-progreso');
+        
+        // Migrar cada alumno
+        for (let i = 0; i < datosAlumnos.length; i++) {
+            const alumno = datosAlumnos[i];
+            
+            try {
+                console.log(`📤 Migrando ${i+1}/${datosAlumnos.length}: ${alumno.nombre}`);
+                
+                // 1. Verificar si existe
+                const { data: existeAlumno } = await client
+                    .from('alumnos')
+                    .select('id')
+                    .eq('rut', alumno.rut)
+                    .single();
+                
+                let alumnoId;
+                
+                if (existeAlumno) {
+                    // Actualizar existente
+                    const { data: alumnoActualizado, error: errorActualizar } = await client
+                        .from('alumnos')
+                        .update({
+                            nombre: alumno.nombre,
+                            curso: alumno.curso,
+                            arancel: alumno.arancel || 0,
+                            beca: alumno.beca || 0,
+                            monto_neto: alumno.montoNeto || alumno.arancel || 0,
+                            total_pagado: alumno.totalPagado || 0,
+                            pendiente: alumno.pendiente || 0,
+                            estado: alumno.estado || 'Pendiente',
+                            año_escolar: 2025
+                        })
+                        .eq('rut', alumno.rut)
+                        .select('id')
+                        .single();
+                    
+                    if (errorActualizar) throw errorActualizar;
+                    alumnoId = alumnoActualizado.id;
+                    console.log(`🔄 Actualizado: ${alumno.nombre}`);
+                } else {
+                    // Insertar nuevo
+                    const { data: alumnoNuevo, error: errorInsertar } = await client
+                        .from('alumnos')
+                        .insert({
+                            rut: alumno.rut,
+                            nombre: alumno.nombre,
+                            curso: alumno.curso,
+                            arancel: alumno.arancel || 0,
+                            beca: alumno.beca || 0,
+                            monto_neto: alumno.montoNeto || alumno.arancel || 0,
+                            total_pagado: alumno.totalPagado || 0,
+                            pendiente: alumno.pendiente || 0,
+                            estado: alumno.estado || 'Pendiente',
+                            año_escolar: 2025
+                        })
+                        .select('id')
+                        .single();
+                    
+                    if (errorInsertar) throw errorInsertar;
+                    alumnoId = alumnoNuevo.id;
+                    console.log(`➕ Insertado: ${alumno.nombre}`);
+                }
+                
+                // 2. Migrar cuotas si existen
+                if (alumno.cuotas && alumno.cuotas.length > 0) {
+                    // Eliminar cuotas existentes
+                    await client
+                        .from('cuotas')
+                        .delete()
+                        .eq('alumno_id', alumnoId);
+                    
+                    // Insertar cuotas nuevas
+                    const cuotasParaInsertar = alumno.cuotas.map(cuota => ({
+                        alumno_id: alumnoId,
+                        numero: cuota.numero || 1,
+                        monto: cuota.monto || 0,
+                        pagada: cuota.pagada || false,
+                        fecha_pago: cuota.pagada && cuota.fechaPago ? cuota.fechaPago : null
+                    }));
+                    
+                    const { error: errorCuotas } = await client
+                        .from('cuotas')
+                        .insert(cuotasParaInsertar);
+                    
+                    if (errorCuotas) {
+                        console.warn(`⚠️ Error insertando cuotas para ${alumno.nombre}:`, errorCuotas);
+                    }
+                }
+                
+                migrados++;
+                if (progressElement) {
+                    progressElement.textContent = migrados;
+                }
+                
+                // Pequeña pausa para no sobrecargar la API
+                if (i % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+            } catch (error) {
+                errores++;
+                console.error(`❌ Error migrando ${alumno.nombre}:`, error.message || error);
+                
+                // Continuar con el siguiente
+                continue;
+            }
+        }
         
         // Remover loading
         if (loadingDiv && loadingDiv.parentNode) {
             loadingDiv.parentNode.removeChild(loadingDiv);
         }
         
-        if (resultado.success) {
-            console.log('✅ Migración completada:', resultado);
-            
-            alert(`🎉 Migración Automática Completada!
+        // Mostrar resultado
+        console.log(`🎉 Migración completada: ${migrados}/${datosAlumnos.length} exitosos`);
+        
+        alert(`🎉 Migración Automática Completada!
 
-✅ Alumnos migrados exitosamente: ${resultado.migrados}
-❌ Errores encontrados: ${resultado.errores}  
-📊 Total procesados: ${resultado.total}
+✅ Alumnos migrados exitosamente: ${migrados}
+❌ Errores encontrados: ${errores}  
+📊 Total procesados: ${datosAlumnos.length}
 
 Los datos ahora están disponibles en Supabase y se sincronizarán automáticamente.
 
-${resultado.migrados > 0 ? '🎯 Tip: El sistema ahora puede trabajar con datos en la nube.' : ''}`);
-            
-            // Opcional: Recargar la página para mostrar datos de Supabase
-            if (resultado.migrados > 0) {
-                const recargar = confirm('¿Deseas recargar la página para usar los datos de Supabase?');
-                if (recargar) {
+🎯 Tip: El sistema ahora puede trabajar con datos en la nube.`);
+        
+        // Opcional: Recargar datos desde Supabase
+        if (migrados > 0) {
+            const recargar = confirm('¿Deseas recargar los datos desde Supabase ahora?');
+            if (recargar) {
+                if (window.cargarDatosDesdeSupabase) {
+                    await window.cargarDatosDesdeSupabase();
+                } else {
                     window.location.reload();
                 }
             }
-            
-        } else {
-            throw new Error(resultado.error || 'Error en la migración automática');
         }
         
     } catch (error) {
@@ -6664,10 +6781,13 @@ ${resultado.migrados > 0 ? '🎯 Tip: El sistema ahora puede trabajar con datos 
 
 Posibles causas:
 • Configuración incorrecta de Supabase
-• Problemas de conectividad
-• Archivo CSV no encontrado en el servidor
-• Políticas RLS muy restrictivas
+• Problemas de conectividad con Supabase
+• Políticas RLS muy restrictivas (ejecuta: ALTER TABLE alumnos DISABLE ROW LEVEL SECURITY;)
+• API Key o URL incorrectas
 
-Por favor verifique la configuración e intente nuevamente.`);
+Por favor:
+1. Verifica la configuración en supabase-config.js
+2. Ve a Supabase SQL Editor y ejecuta: ALTER TABLE alumnos DISABLE ROW LEVEL SECURITY;
+3. Intenta nuevamente`);
     }
 }
