@@ -106,10 +106,7 @@
                                         ➕ Matricular Alumno
                                     </button>
                                     <button class="btn btn-warning btn-sm" onclick="forzarRecargaCSV()">
-                                        🔄 Recargar Datos
-                                    </button>
-                                    <button class="btn btn-info btn-sm" onclick="migrarAutomaticamente()" title="Migrar datos automáticamente a Supabase">
-                                        🚀 Migrar a Supabase
+                                        📊 Actualizar Vista
                                     </button>
                                 </div>
                             </div>
@@ -210,12 +207,6 @@
                                                 <div class="btn-group" role="group">
                                                     <button class="btn btn-outline-info btn-sm" onclick="descargarBaseDeDatos()" title="Descargar base de datos completa para análisis">
                                                         📁 Descargar BD
-                                                    </button>
-                                                    <button class="btn btn-outline-warning btn-sm" onclick="aplicarAjustesEspecificos()" title="Aplicar ajustes específicos de Triviño y Segura">
-                                                        🔧 Ajustes
-                                                    </button>
-                                                    <button class="btn btn-outline-success btn-sm" onclick="migrarDatosASupabase()" title="Migrar datos a Supabase para sincronización en la nube">
-                                                        ☁️ Migrar a Supabase
                                                     </button>
                                                 </div>
                                             </div>
@@ -383,18 +374,12 @@
             return supabase !== null || window.supabaseClient !== null;
         }
 
-        // Función básica de migración
-        async function migrarDatosASupabase() {
-            alert('⚠️ La migración completa está disponible en producción (Netlify).\n\nEn desarrollo local, usa el CSV directamente.\n\n✅ Los datos se migrarán automáticamente cuando despliegues a Netlify.');
-            return;
-        }
 
         // Hacer disponible globalmente
         window.SUPABASE_CONFIG = SUPABASE_CONFIG;
         window.supabaseClient = supabase;
         window.isSupabaseReady = isSupabaseReady;
         window.initializeSupabase = initializeSupabase;
-        window.migrarDatosASupabase = migrarDatosASupabase;
 
         // Inicializar cuando se carga
         document.addEventListener('DOMContentLoaded', function() {

@@ -227,10 +227,95 @@ function eliminarBotonesMigracion() {
         inputCSV.remove();
     }
     
-    
+    // Cambiar el botón de migración por botón de recarga
+    const btnMigrar = document.querySelector('button[onclick="migrarAutomaticamente()"]');
+    if (btnMigrar) {
+        console.log('🔄 Convirtiendo botón migrar en botón recargar');
+        btnMigrar.textContent = '🔄 Recargar Datos';
+        btnMigrar.title = 'Recargar datos desde Supabase';
+        btnMigrar.onclick = recargarDatosSupabase;
+        btnMigrar.className = 'btn btn-success btn-sm';
+    }
 }
 
+async function recargarDatosSupabase() {
+    console.log('🔄 Recargando datos desde Supabase...');
+    
+    // Mostrar loading
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'alert alert-info text-center';
+    loadingDiv.innerHTML = `
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        🔄 <strong>Recargando datos desde Supabase...</strong>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(loadingDiv, container.firstChild);
+    
+    try {
+        // Limpiar datos actuales
+        datosAlumnos = [];
+        datosFiltrados = [];
+        
+        // Recargar desde Supabase
+        const cargadoSupabase = await cargarDatosDesdeSupabase();
+        
+        // Remover loading
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        // Remover mensaje de sin datos si existe
+        const mensajeSinDatos = document.getElementById('mensaje-sin-datos');
+        if (mensajeSinDatos) {
+            mensajeSinDatos.remove();
+        }
+        
+        if (cargadoSupabase && datosAlumnos.length > 0) {
+            console.log(`✅ Datos recargados: ${datosAlumnos.length} alumnos`);
+            mostrarEstadoSupabase(true);
+            
+            // Actualizar interfaz
+            actualizarCursos();
+            aplicarFiltros();
+            actualizarEstadisticas();
+            
+            alert(`✅ Datos recargados exitosamente!
 
+📊 Total de alumnos: ${datosAlumnos.length}
+🔄 Los datos están sincronizados con Supabase`);
+        } else {
+            console.log('⚠️ No se encontraron datos en Supabase');
+            mostrarMensajeSinDatos();
+            mostrarEstadoSupabase(false);
+            
+            alert(`⚠️ No se encontraron datos en Supabase
+
+Posibles causas:
+• Los datos aún no se han migrado a Supabase
+• Problemas de conectividad
+• Configuración incorrecta de Supabase
+
+Si es tu primera vez, necesitas migrar los datos desde el CSV.`);
+        }
+        
+    } catch (error) {
+        // Remover loading si existe
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        console.error('❌ Error recargando datos:', error);
+        mostrarEstadoSupabase(false);
+        
+        alert(`❌ Error recargando datos desde Supabase: ${error.message}
+
+Por favor verifica:
+• Conexión a internet
+• Configuración de Supabase
+• Estado del servicio Supabase`);
+    }
+}
 
 // Función para sincronizar cambios automáticamente con Supabase
 async function sincronizarConSupabase(alumnoRut, tipoCambio = 'pago') {
@@ -669,7 +754,7 @@ function procesarCSV(textoCSV) {
     console.log(`📊 Total en datosAlumnos: ${datosAlumnos.length}`);
     
     // Aplicar ajustes permanentes a datos existentes si los hay
-    
+    aplicarAjustesPermanentesExistentes();
     
     // Actualizar interfaz
     console.log('🔄 Actualizando interfaz...');
@@ -5687,10 +5772,227 @@ El archivo incluye una columna "diferencia" que muestra las discrepancias por al
 }
 
 // Función para aplicar ajustes permanentes a datos existentes
-
+function aplicarAjustesPermanentesExistentes() {
+    console.log('🔧 Aplicando ajustes permanentes a datos existentes...');
+    
+    datosAlumnos.forEach(alumno => {
+        let ajustado = false;
+        
+        // TRIVIÑO OJEDA FRANCISCA
+        if (alumno.nombre.includes('TRIVINO OJEDA FRANCISCA') || alumno.rut === '23.437.771-K') {
+            alumno.arancel = 812960;
+            alumno.montoNeto = alumno.arancel - alumno.beca;
+            
+            if (alumno.cuotas.length >= 2) {
+                alumno.cuotas[0].monto = 0;
+                alumno.cuotas[0].pagada = false;
+                alumno.cuotas[1].monto = 0;
+                alumno.cuotas[1].pagada = false;
+            }
+            
+            if (alumno.cuotas.length >= 10) {
+                const montoPorCuota = Math.round(alumno.montoNeto / 8);
+                const restoDistribuir = alumno.montoNeto - (montoPorCuota * 8);
+                
+                for (let i = 2; i < 10; i++) {
+                    alumno.cuotas[i].monto = montoPorCuota;
+                    if (i === 9 && restoDistribuir !== 0) {
+                        alumno.cuotas[i].monto += restoDistribuir;
+                    }
+                }
+            }
+            ajustado = true;
+        }
+        
+        // SEGURA MANCILLA JULIETA
+        if (alumno.nombre.includes('SEGURA MANCILLA JULIETA') || alumno.rut === '24.816.254-6') {
+            if (alumno.cuotas.length >= 1) {
+                alumno.cuotas[0].monto = 74000;
+                alumno.cuotas[0].pagada = true;
+            }
+            ajustado = true;
+        }
+        
+        // Recalcular totales si hubo ajustes
+        if (ajustado) {
+            let totalAbonado = 0;
+            alumno.cuotas.forEach(cuota => {
+                if (cuota.pagada) {
+                    totalAbonado += cuota.monto;
+                } else if (cuota.abonos && cuota.abonos.length > 0) {
+                    totalAbonado += cuota.abonos.reduce((sum, abono) => sum + abono.monto, 0);
+                }
+            });
+            
+            alumno.totalPagadoReal = totalAbonado;
+            alumno.totalPagado = totalAbonado;
+            alumno.pendiente = Math.max(0, alumno.montoNeto - totalAbonado);
+            alumno.estado = determinarEstado(alumno);
+        }
+    });
+    
+    // Guardar datos actualizados
+    guardarDatosEnStorage();
+    console.log('✅ Ajustes permanentes aplicados a datos existentes');
+}
 
 // Función para ajustes específicos de alumnos
+function aplicarAjustesEspecificos() {
+    let ajustesRealizados = 0;
+    
+    console.log('🔧 Aplicando ajustes específicos...');
+    
+    // 1. TRIVIÑO OJEDA FRANCISCA - Arancel $812,960 y año completamente pagado
+    const trivinoFrancisca = datosAlumnos.find(a => 
+        a.nombre.includes('TRIVINO OJEDA FRANCISCA') || 
+        a.rut === '23.437.771-K'
+    );
+    
+    if (trivinoFrancisca) {
+        console.log(`🔧 Ajustando TRIVIÑO OJEDA FRANCISCA - RUT: ${trivinoFrancisca.rut}`);
+        
+        // Corregir arancel a $812,960
+        const arancelAnterior = trivinoFrancisca.arancel;
+        trivinoFrancisca.arancel = 812960;
+        trivinoFrancisca.montoNeto = trivinoFrancisca.arancel - trivinoFrancisca.beca;
+        console.log(`   Arancel: ${formatearMoneda(arancelAnterior)} → ${formatearMoneda(812960)}`);
+        console.log(`   Nuevo monto neto: ${formatearMoneda(trivinoFrancisca.montoNeto)}`);
+        
+        // Ajustar cuotas: 1 y 2 en $0, redistribuir monto neto en cuotas 3 a 10 (8 cuotas)
+        if (trivinoFrancisca.cuotas && trivinoFrancisca.cuotas.length >= 10) {
+            const cuota1Anterior = trivinoFrancisca.cuotas[0].monto;
+            const cuota2Anterior = trivinoFrancisca.cuotas[1].monto;
+            
+            // Cuotas 1 y 2 en $0 (no se pagan)
+            trivinoFrancisca.cuotas[0].monto = 0;
+            trivinoFrancisca.cuotas[0].pagada = false;
+            trivinoFrancisca.cuotas[1].monto = 0;
+            trivinoFrancisca.cuotas[1].pagada = false;
+            
+            // Calcular monto por cuota para distribuir el monto neto en 8 cuotas (3-10)
+            const montoPorCuota = Math.round(trivinoFrancisca.montoNeto / 8);
+            const restoDistribuir = trivinoFrancisca.montoNeto - (montoPorCuota * 8);
+            
+            console.log(`   Distribuyendo ${formatearMoneda(trivinoFrancisca.montoNeto)} en 8 cuotas (3-10)`);
+            console.log(`   Monto por cuota: ${formatearMoneda(montoPorCuota)}`);
+            
+            // Redistribuir en cuotas 3 a 10
+            for (let i = 2; i < 10; i++) { // índices 2-9 = cuotas 3-10
+                const montoAnterior = trivinoFrancisca.cuotas[i].monto;
+                trivinoFrancisca.cuotas[i].monto = montoPorCuota;
+                
+                // Agregar el resto a la última cuota para que sume exacto
+                if (i === 9 && restoDistribuir !== 0) {
+                    trivinoFrancisca.cuotas[i].monto += restoDistribuir;
+                }
+                
+                console.log(`   Cuota ${i + 1}: ${formatearMoneda(montoAnterior)} → ${formatearMoneda(trivinoFrancisca.cuotas[i].monto)}`);
+            }
+            
+            // Recalcular total pagado basado en las cuotas que realmente ha pagado
+            const totalPagadoAnterior = trivinoFrancisca.totalPagado;
+            let nuevoTotalPagado = 0;
+            trivinoFrancisca.cuotas.forEach(cuota => {
+                if (cuota.pagada) {
+                    nuevoTotalPagado += cuota.monto;
+                }
+            });
+            
+            trivinoFrancisca.totalPagadoReal = nuevoTotalPagado;
+            trivinoFrancisca.totalPagado = nuevoTotalPagado;
+            trivinoFrancisca.pendiente = Math.max(0, trivinoFrancisca.montoNeto - nuevoTotalPagado);
+            trivinoFrancisca.estado = determinarEstado(trivinoFrancisca);
+            
+            console.log(`   Cuota 1: ${formatearMoneda(cuota1Anterior)} → $0`);
+            console.log(`   Cuota 2: ${formatearMoneda(cuota2Anterior)} → $0`);
+            console.log(`   Total pagado: ${formatearMoneda(totalPagadoAnterior)} → ${formatearMoneda(nuevoTotalPagado)}`);
+            console.log(`   Pendiente: ${formatearMoneda(trivinoFrancisca.pendiente)}`);
+            console.log(`   Estado: ${trivinoFrancisca.estado}`);
+            
+            ajustesRealizados++;
+        }
+    }
+    
+    // 2. SEGURA MANCILLA JULIETA - Primera cuota $74,000 PAGADA
+    const seguraJulieta = datosAlumnos.find(a => 
+        a.nombre.includes('SEGURA MANCILLA JULIETA') || 
+        a.rut === '24.816.254-6'
+    );
+    
+    if (seguraJulieta) {
+        console.log(`🔧 Ajustando SEGURA MANCILLA JULIETA - RUT: ${seguraJulieta.rut}`);
+        
+        if (seguraJulieta.cuotas && seguraJulieta.cuotas.length >= 1) {
+            const cuota1Actual = seguraJulieta.cuotas[0].monto;
+            const cuota1PagadaActual = seguraJulieta.cuotas[0].pagada;
+            
+            console.log(`   Cuota 1 actual: ${formatearMoneda(cuota1Actual)} - Pagada: ${cuota1PagadaActual}`);
+            
+            let cambiosRealizados = false;
+            
+            // Corregir monto si es necesario
+            if (cuota1Actual !== 74000) {
+                console.log(`   🔧 Corrigiendo monto: ${formatearMoneda(cuota1Actual)} → ${formatearMoneda(74000)}`);
+                seguraJulieta.cuotas[0].monto = 74000;
+                cambiosRealizados = true;
+            }
+            
+            // Marcar como PAGADA (ya había pagado)
+            if (!cuota1PagadaActual) {
+                console.log(`   ✅ Marcando cuota 1 como PAGADA (ya había pagado)`);
+                seguraJulieta.cuotas[0].pagada = true;
+                cambiosRealizados = true;
+            }
+            
+            if (cambiosRealizados) {
+                // Recalcular totales
+                let nuevoTotalPagado = 0;
+                seguraJulieta.cuotas.forEach(cuota => {
+                    if (cuota.pagada) {
+                        nuevoTotalPagado += cuota.monto;
+                    }
+                });
+                
+                seguraJulieta.totalPagadoReal = nuevoTotalPagado;
+                seguraJulieta.totalPagado = nuevoTotalPagado;
+                seguraJulieta.pendiente = Math.max(0, seguraJulieta.montoNeto - nuevoTotalPagado);
+                seguraJulieta.estado = determinarEstado(seguraJulieta);
+                
+                console.log(`   Nuevo total pagado: ${formatearMoneda(nuevoTotalPagado)}`);
+                console.log(`   Nuevo pendiente: ${formatearMoneda(seguraJulieta.pendiente)}`);
+                console.log(`   Nuevo estado: ${seguraJulieta.estado}`);
+                
+                ajustesRealizados++;
+            } else {
+                console.log(`   ✅ Cuota 1 ya está correcta y pagada`);
+            }
+        }
+    }
+    
+    if (ajustesRealizados > 0) {
+        // Actualizar interfaz
+        aplicarFiltros();
+        actualizarEstadisticas();
+        guardarDatosEnStorage();
+        
+        console.log(`✅ Ajustes completados: ${ajustesRealizados} alumnos modificados`);
+        
+        alert(`✅ Ajustes específicos aplicados!
 
+📋 Cambios realizados:
+• TRIVIÑO OJEDA FRANCISCA: 
+  - Arancel → $812.960
+  - Cuotas 1 y 2 → $0
+  - PAGA CUOTAS 3 A 10 (8 cuotas) 📝
+• SEGURA MANCILLA JULIETA: 
+  - Cuota 1 = $74,000 PAGADA (ya había pagado)
+
+Total alumnos ajustados: ${ajustesRealizados}`);
+    } else {
+        console.log('ℹ️ No se encontraron ajustes necesarios');
+        alert('ℹ️ Los valores ya están correctos o no se encontraron los alumnos especificados');
+    }
+}
 
 // === FUNCIONES PARA EDITAR DATOS DE APODERADO Y CORREO ===
 
@@ -6558,103 +6860,228 @@ Por favor verifique:
 }
 
 // Función para migración automática a Supabase (Frontend)
-
-// Función para obtener el estado de una cuota específica
-function obtenerEstadoCuota(alumno, numeroCuota) {
-    const montoCuota = alumno[`cuota_${numeroCuota}`] || 0;
-    const montoEsperado = Math.ceil(alumno.arancel / 10); // Dividir arancel en 10 cuotas aproximadamente
+async function migrarAutomaticamente() {
+    console.log('🚀 Iniciando migración automática...');
     
-    if (montoCuota >= montoEsperado) {
-        return { estado: 'pagada', clase: 'bg-success text-white', icono: '✅' };
-    } else if (montoCuota > 0) {
-        return { estado: 'parcial', clase: 'bg-warning text-dark', icono: '⚠️' };
-    } else {
-        return { estado: 'pendiente', clase: 'bg-danger text-white', icono: '❌' };
-    }
-}
-
-// Función para mostrar el detalle de cuotas en el modal
-function mostrarDetalleCuotas(alumno) {
-    let htmlCuotas = '<div class="row">';
-    
-    for (let i = 1; i <= 10; i++) {
-        const estadoCuota = obtenerEstadoCuota(alumno, i);
-        const montoCuota = alumno[`cuota_${i}`] || 0;
-        
-        htmlCuotas += `
-            <div class="col-md-6 col-lg-4 mb-2">
-                <div class="card ${estadoCuota.clase} border-0">
-                    <div class="card-body py-2 px-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span><strong>Cuota ${i}</strong></span>
-                            <span>${estadoCuota.icono}</span>
-                        </div>
-                        <div class="small">
-                            ${montoCuota > 0 ? `$${montoCuota.toLocaleString()}` : 'Pendiente'}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+    // Verificar que haya datos cargados
+    if (!datosAlumnos || datosAlumnos.length === 0) {
+        alert('❌ No hay datos para migrar. Primero carga el archivo CSV usando el botón "📁 Cargar CSV".');
+        return;
     }
     
-    htmlCuotas += '</div>';
-    return htmlCuotas;
-}
-
-// Actualizar la función existente para mostrar el detalle del alumno
-function actualizarModalDetalleAlumno(alumno) {
-    const modalBody = document.querySelector('#modalDetalleAlumno .modal-body');
-    if (!modalBody) return;
-    
-    // Calcular estadísticas de cuotas
-    let cuotasPagadas = 0;
-    let cuotasParciales = 0;
-    let cuotasPendientes = 0;
-    
-    for (let i = 1; i <= 10; i++) {
-        const estadoCuota = obtenerEstadoCuota(alumno, i);
-        switch (estadoCuota.estado) {
-            case 'pagada': cuotasPagadas++; break;
-            case 'parcial': cuotasParciales++; break;
-            case 'pendiente': cuotasPendientes++; break;
-        }
+    // Verificar que Supabase esté configurado
+    if (!window.supabaseClient && !window.supabase) {
+        alert('❌ Supabase no está configurado. Verifica la configuración en supabase-config.js');
+        return;
     }
     
-    // Agregar resumen de cuotas al modal existente
-    const resumenCuotas = `
-        <div class="mt-3">
-            <h6>📊 Resumen de Cuotas</h6>
-            <div class="row text-center">
-                <div class="col-4">
-                    <div class="badge bg-success fs-6">✅ ${cuotasPagadas}</div>
-                    <div class="small">Pagadas</div>
-                </div>
-                <div class="col-4">
-                    <div class="badge bg-warning fs-6">⚠️ ${cuotasParciales}</div>
-                    <div class="small">Parciales</div>
-                </div>
-                <div class="col-4">
-                    <div class="badge bg-danger fs-6">❌ ${cuotasPendientes}</div>
-                    <div class="small">Pendientes</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="mt-3">
-            <h6>💳 Detalle de Cuotas</h6>
-            ${mostrarDetalleCuotas(alumno)}
-        </div>
+    // Confirmar acción
+    const proceder = confirm(`🚀 Migración Automática a Supabase
+
+Esta función migrará ${datosAlumnos.length} alumnos desde los datos cargados en memoria a Supabase.
+
+✅ Ventajas:
+• Usa los datos ya cargados en el sistema
+• Proceso directo desde el navegador
+• Actualiza datos existentes sin duplicar
+• Manejo de errores en tiempo real
+
+⚠️ Importante:
+• Se migrarán ${datosAlumnos.length} alumnos con sus cuotas
+• La migración puede tomar varios minutos
+• Se crearán/actualizarán registros en Supabase
+• Requiere que las políticas RLS estén desactivadas
+
+¿Deseas proceder con la migración automática?`);
+    
+    if (!proceder) {
+        console.log('❌ Migración cancelada por el usuario');
+        return;
+    }
+    
+    // Mostrar loading
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'alert alert-info text-center';
+    loadingDiv.innerHTML = `
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        🚀 <strong>Migrando ${datosAlumnos.length} alumnos a Supabase...</strong><br>
+        <small>Proceso: <span id="migracion-progreso">0</span>/${datosAlumnos.length} completados</small>
     `;
     
-    // Buscar si ya existe el resumen y reemplazarlo, o agregarlo
-    const existingResumen = modalBody.querySelector('.mt-3 h6');
-    if (existingResumen && existingResumen.textContent.includes('Resumen de Cuotas')) {
-        // Reemplazar el resumen existente
-        const parent = existingResumen.closest('.mt-3');
-        parent.innerHTML = resumenCuotas;
-    } else {
-        // Agregar al final del modal
-        modalBody.insertAdjacentHTML('beforeend', resumenCuotas);
+    const container = document.querySelector('.container');
+    container.insertBefore(loadingDiv, container.firstChild);
+    
+    try {
+        // Obtener cliente de Supabase
+        const client = window.supabaseClient || window.supabase.createClient(
+            window.SUPABASE_CONFIG.url, 
+            window.SUPABASE_CONFIG.anonKey
+        );
+        
+        if (!client) {
+            throw new Error('No se pudo inicializar cliente de Supabase');
+        }
+        
+        console.log('📡 Cliente Supabase obtenido, iniciando migración...');
+        
+        let migrados = 0;
+        let errores = 0;
+        const progressElement = document.getElementById('migracion-progreso');
+        
+        // Migrar cada alumno
+        for (let i = 0; i < datosAlumnos.length; i++) {
+            const alumno = datosAlumnos[i];
+            
+            try {
+                console.log(`📤 Migrando ${i+1}/${datosAlumnos.length}: ${alumno.nombre}`);
+                
+                // 1. Verificar si existe
+                const { data: existeAlumno } = await client
+                    .from('alumnos')
+                    .select('id')
+                    .eq('rut', alumno.rut)
+                    .single();
+                
+                let alumnoId;
+                
+                if (existeAlumno) {
+                    // Actualizar existente
+                    const { data: alumnoActualizado, error: errorActualizar } = await client
+                        .from('alumnos')
+                        .update({
+                            nombre: alumno.nombre,
+                            curso: alumno.curso,
+                            arancel: alumno.arancel || 0,
+                            beca: alumno.beca || 0,
+                            total_pagado: alumno.totalPagado || 0,
+                            pendiente: alumno.pendiente || 0,
+                            estado: alumno.estado || 'Pendiente',
+                            año_escolar: 2025
+                        })
+                        .eq('rut', alumno.rut)
+                        .select('id')
+                        .single();
+                    
+                    if (errorActualizar) throw errorActualizar;
+                    alumnoId = alumnoActualizado.id;
+                    console.log(`🔄 Actualizado: ${alumno.nombre}`);
+                } else {
+                    // Insertar nuevo
+                    const { data: alumnoNuevo, error: errorInsertar } = await client
+                        .from('alumnos')
+                        .insert({
+                            rut: alumno.rut,
+                            nombre: alumno.nombre,
+                            curso: alumno.curso,
+                            arancel: alumno.arancel || 0,
+                            beca: alumno.beca || 0,
+                            total_pagado: alumno.totalPagado || 0,
+                            pendiente: alumno.pendiente || 0,
+                            estado: alumno.estado || 'Pendiente',
+                            año_escolar: 2025
+                        })
+                        .select('id')
+                        .single();
+                    
+                    if (errorInsertar) throw errorInsertar;
+                    alumnoId = alumnoNuevo.id;
+                    console.log(`➕ Insertado: ${alumno.nombre}`);
+                }
+                
+                // 2. Migrar cuotas si existen
+                if (alumno.cuotas && alumno.cuotas.length > 0) {
+                    // Eliminar cuotas existentes
+                    await client
+                        .from('cuotas')
+                        .delete()
+                        .eq('alumno_id', alumnoId);
+                    
+                    // Insertar cuotas nuevas
+                    const cuotasParaInsertar = alumno.cuotas.map(cuota => ({
+                        alumno_id: alumnoId,
+                        numero: cuota.numero || 1,
+                        monto: cuota.monto || 0,
+                        pagada: cuota.pagada || false,
+                        fecha_pago: cuota.pagada && cuota.fechaPago ? cuota.fechaPago : null
+                    }));
+                    
+                    const { error: errorCuotas } = await client
+                        .from('cuotas')
+                        .insert(cuotasParaInsertar);
+                    
+                    if (errorCuotas) {
+                        console.warn(`⚠️ Error insertando cuotas para ${alumno.nombre}:`, errorCuotas);
+                    }
+                }
+                
+                migrados++;
+                if (progressElement) {
+                    progressElement.textContent = migrados;
+                }
+                
+                // Pequeña pausa para no sobrecargar la API
+                if (i % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+            } catch (error) {
+                errores++;
+                console.error(`❌ Error migrando ${alumno.nombre}:`, error.message || error);
+                
+                // Continuar con el siguiente
+                continue;
+            }
+        }
+        
+        // Remover loading
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        // Mostrar resultado
+        console.log(`🎉 Migración completada: ${migrados}/${datosAlumnos.length} exitosos`);
+        
+        alert(`🎉 Migración Automática Completada!
+
+✅ Alumnos migrados exitosamente: ${migrados}
+❌ Errores encontrados: ${errores}  
+📊 Total procesados: ${datosAlumnos.length}
+
+Los datos ahora están disponibles en Supabase y se sincronizarán automáticamente.
+
+🎯 Tip: El sistema ahora puede trabajar con datos en la nube.`);
+        
+        // Opcional: Recargar datos desde Supabase
+        if (migrados > 0) {
+            const recargar = confirm('¿Deseas recargar los datos desde Supabase ahora?');
+            if (recargar) {
+                if (window.cargarDatosDesdeSupabase) {
+                    await window.cargarDatosDesdeSupabase();
+                } else {
+                    window.location.reload();
+                }
+            }
+        }
+        
+    } catch (error) {
+        // Remover loading si existe
+        if (loadingDiv && loadingDiv.parentNode) {
+            loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+        
+        console.error('❌ Error en migración automática:', error);
+        
+        alert(`❌ Error en la migración automática: ${error.message}
+
+Posibles causas:
+• Configuración incorrecta de Supabase
+• Problemas de conectividad con Supabase
+• Políticas RLS muy restrictivas (ejecuta: ALTER TABLE alumnos DISABLE ROW LEVEL SECURITY;)
+• API Key o URL incorrectas
+
+Por favor:
+1. Verifica la configuración en supabase-config.js
+2. Ve a Supabase SQL Editor y ejecuta: ALTER TABLE alumnos DISABLE ROW LEVEL SECURITY;
+3. Intenta nuevamente`);
     }
 }
